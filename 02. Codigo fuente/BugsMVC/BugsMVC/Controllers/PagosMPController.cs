@@ -508,7 +508,19 @@ namespace BugsMVC.Controllers
                 + ',' + mercadoPago.MaquinaId.ToString() + ','
                 + ((long)Math.Round(mercadoPago.Monto * 100, 0, MidpointRounding.AwayFromZero)).ToString() + '!';
 
+            string destinoIp = AmbienteConfigHelper.AmbienteSimuladoresHabilitado ? "127.0.0.1" : ip;
+            int destinoPuerto = AmbienteConfigHelper.AmbienteSimuladoresHabilitado ? 13000 : Convert.ToInt32(puerto);
+
             Log.Info($"[{mercadoPago.Comprobante}] - Enviando pago a máquina...");
+
+            if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
+            {
+                Log.Info($"Se utilizará el destino de simulador para el envío a máquina ({destinoIp}:{destinoPuerto}).");
+            }
+            else
+            {
+                Log.Info($"Se utilizará el destino configurado para el envío a máquina ({destinoIp}:{destinoPuerto}).");
+            }
 
             while (intentos < limiteIntentos && volverAintentar)
             {
@@ -520,11 +532,11 @@ namespace BugsMVC.Controllers
 
                     TcpClient tcpclnt = new TcpClient();
 
-                    var connectTask = tcpclnt.ConnectAsync(ip, Convert.ToInt32(puerto));
+                    var connectTask = tcpclnt.ConnectAsync(destinoIp, destinoPuerto);
                     if (!connectTask.Wait(timeoutMs))
                     {
                         tcpclnt.Close();
-                        throw new TimeoutException($"[{mercadoPago.Comprobante}] - Timeout al intentar conectar con la máquina en {ip}:{puerto} (timeout={timeoutMs}ms)");
+                        throw new TimeoutException($"[{mercadoPago.Comprobante}] - Timeout al intentar conectar con la máquina en {destinoIp}:{destinoPuerto} (timeout={timeoutMs}ms)");
                     }
 
                     Stream stm = tcpclnt.GetStream();
@@ -564,7 +576,7 @@ namespace BugsMVC.Controllers
                             entity.FechaModificacionEstadoTransmision = DateTime.Now;
                             Log.Error(
                                 $"[{mercadoPago.Comprobante}] - No se pudo realizar la conexión al socket luego de {limiteIntentos} reintentos.\n" +
-                                $"Destino: {ip}:{puerto}\n" +
+                                $"Destino: {destinoIp}:{destinoPuerto}\n" +
                                 $"Mensaje: {e.Message}\n"
                             );
                             entity.Reintentos = intentos;
