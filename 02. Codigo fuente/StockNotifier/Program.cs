@@ -35,6 +35,7 @@ namespace StockNotifier
             try
             {
                 db = new BugsContext();
+                AmbienteConfigHelper.Inicializar();
 
                 var stocks = db.Stocks.ToList();
                 var maquinas = db.Maquinas.ToList();
