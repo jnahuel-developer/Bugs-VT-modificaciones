@@ -26,7 +26,7 @@ namespace BugsMVC
 
             log4net.Config.XmlConfigurator.Configure(new FileInfo(Server.MapPath("~/Web.config")));
             _ = PagosMixtosConfigHelper.PagosMixtosHabilitados;
-            AmbienteConfigHelper.Inicializar();
+            BugsMVC.Helpers.AmbienteConfigHelper.Inicializar();
             //ModelBinders.Binders.Add(typeof(decimal), new DecimalModelBinder());
         }
 
