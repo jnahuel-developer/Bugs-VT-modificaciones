@@ -16,25 +16,34 @@ namespace BugsMVC.Helpers
         private static bool ResolverPagosMixtosHabilitados()
         {
             string modo = ConfigurationManager.AppSettings["PagosMixtos:Modo"];
+            bool pagosMixtosHabilitados;
 
             if (string.IsNullOrWhiteSpace(modo))
             {
                 Log.Info("No se encontró la configuración 'PagosMixtos:Modo'. Se tomará el valor OFF por defecto.");
-                return false;
+                pagosMixtosHabilitados = false;
+                Log.Info("Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: OFF.");
+                return pagosMixtosHabilitados;
             }
 
             if (string.Equals(modo, "ON", StringComparison.OrdinalIgnoreCase))
             {
-                return true;
+                pagosMixtosHabilitados = true;
+                Log.Info("Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: ON.");
+                return pagosMixtosHabilitados;
             }
 
             if (string.Equals(modo, "OFF", StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                pagosMixtosHabilitados = false;
+                Log.Info("Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: OFF.");
+                return pagosMixtosHabilitados;
             }
 
             Log.Info($"Se detectó un valor inválido en 'PagosMixtos:Modo' ({modo}). Se tomará el valor OFF por defecto.");
-            return false;
+            pagosMixtosHabilitados = false;
+            Log.Info("Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: OFF.");
+            return pagosMixtosHabilitados;
         }
     }
 }
