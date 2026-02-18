@@ -677,14 +677,27 @@ namespace BugsMVC.Controllers
 
         private async Task CerrarPagoMixtoInconsistente(BugsContext bugsDbContext, MercadoPagoOperacionMixta operacion, Operador operador)
         {
-            await GuardarNoProcesable(
-                bugsDbContext,
-                0,
-                operacion.ExternalReference,
-                operador,
-                operacion.MontoAcumulado,
-                "Pago mixto inconsistente",
-                operacion.ExternalReference);
+            bool cierreSilencioso = operacion.MontoAcumulado == 0 ||
+                (operacion.PaymentId1 == null && operacion.PaymentId2 == null);
+
+            if (cierreSilencioso)
+            {
+                Log.Info(
+                    "Cierre por timeout de pago mixto sin impacto financiero: no se registra NO_PROCESABLE en MercadoPagoTable. " +
+                    $"MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, ExternalReference={operacion.ExternalReference}, OperadorId={operacion.OperadorId}, " +
+                    $"MontoAcumulado={operacion.MontoAcumulado}, ApprovedCount={operacion.ApprovedCount}, PaymentId1={operacion.PaymentId1}, PaymentId2={operacion.PaymentId2}");
+            }
+            else
+            {
+                await GuardarNoProcesable(
+                    bugsDbContext,
+                    0,
+                    "Pago mixto inconsistente",
+                    operador,
+                    operacion.MontoAcumulado,
+                    null,
+                    operacion.ExternalReference);
+            }
 
             operacion.Cerrada = true;
             operacion.FechaCierreUtc = DateTime.UtcNow;
