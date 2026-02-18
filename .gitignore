@@ -253,3 +253,6 @@ coverage/
 # Mantener config de scripts versionado
 !**/dbScriptsConfig.json
 ###############################################################################
+
+
+/05. Simuladores/mp_sim_data.json
