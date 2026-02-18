@@ -58,10 +58,16 @@ class PaymentRecord:
 
     def to_mp_json(self) -> Dict[str, Any]:
         """JSON mínimo que suele mapear bien a SDKs (status, transaction_amount, external_reference, etc.)"""
+        status_detail_map = {
+            "approved": "accredited",
+            "authorized": "pending",
+            "rejected": "rejected",
+            "cancelled": "cancelled",
+        }
         payload = {
             "id": self.id,
             "status": self.status,
-            "status_detail": "accredited" if self.status == "approved" else "pending",
+            "status_detail": status_detail_map.get(self.status, "pending"),
             "transaction_amount": self.transaction_amount,
             "currency_id": self.currency_id,
             "payment_method_id": self.payment_method_id,
@@ -242,6 +248,14 @@ class MpSimHandler(BaseHTTPRequestHandler):
             body = read_json_body(self) or {}
             return self._scenario_mixed(body, ok=False)
 
+        if path == "/__admin/scenarios/mixed_rejected":
+            body = read_json_body(self) or {}
+            return self._scenario_mixed(body, ok=True, payment_2_final_status="rejected")
+
+        if path == "/__admin/scenarios/mixed_cancelled":
+            body = read_json_body(self) or {}
+            return self._scenario_mixed(body, ok=True, payment_2_final_status="cancelled")
+
         if path == "/__admin/scenarios/simple":
             body = read_json_body(self) or {}
             return self._scenario_simple(body)
@@ -292,7 +306,7 @@ class MpSimHandler(BaseHTTPRequestHandler):
 
         return json_response(self, 200, {"ok": True, "scenario": "simple", "payment_id": payment_id})
 
-    def _scenario_mixed(self, body: Dict[str, Any], ok: bool) -> None:
+    def _scenario_mixed(self, body: Dict[str, Any], ok: bool, payment_2_final_status: str = "approved") -> None:
         """
         Crea escenario mixto:
         - payment_id_1: authorized -> approved (mismo id cambia status)
@@ -332,23 +346,31 @@ class MpSimHandler(BaseHTTPRequestHandler):
 
         rec2 = PaymentRecord(
             id=pid2,
-            status="approved",
+            status=payment_2_final_status,
             transaction_amount=a2,
             external_reference=ext,
             payment_method_id=m2,
-            status_sequence=["approved"],
+            status_sequence=[payment_2_final_status],
         )
 
         with _LOCK:
             STORE.upsert(rec1)
             STORE.upsert(rec2)
 
+        scenario_name = "mixed_fail"
+        if ok:
+            scenario_name = {
+                "approved": "mixed_ok",
+                "rejected": "mixed_rejected",
+                "cancelled": "mixed_cancelled",
+            }.get(payment_2_final_status, "mixed_ok")
+
         return json_response(
             self,
             200,
             {
                 "ok": True,
-                "scenario": "mixed_ok" if ok else "mixed_fail",
+                "scenario": scenario_name,
                 "payment_id_1": pid1,
                 "payment_id_2": pid2,
                 "external_reference": ext,
@@ -373,6 +395,8 @@ def run_server(host: str, port: int, persist_path: Optional[str]) -> None:
     print("  POST /__admin/scenarios/simple")
     print("  POST /__admin/scenarios/mixed_ok")
     print("  POST /__admin/scenarios/mixed_fail")
+    print("  POST /__admin/scenarios/mixed_rejected")
+    print("  POST /__admin/scenarios/mixed_cancelled")
     print("")
     print("CTRL+C para salir.")
     try:
