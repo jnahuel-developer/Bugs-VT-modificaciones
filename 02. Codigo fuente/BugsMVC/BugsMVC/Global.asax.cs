@@ -25,6 +25,7 @@ namespace BugsMVC
             DefaultModelBinder.ResourceClassKey = "Messages";
 
             log4net.Config.XmlConfigurator.Configure(new FileInfo(Server.MapPath("~/Web.config")));
+            _ = PagosMixtosConfigHelper.PagosMixtosHabilitados;
             //ModelBinders.Binders.Add(typeof(decimal), new DecimalModelBinder());
         }
 

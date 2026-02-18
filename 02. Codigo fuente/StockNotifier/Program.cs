@@ -124,6 +124,8 @@ namespace StockNotifier
 
                 }
 
+                bool pagosMixtosHabilitados = PagosMixtosConfigHelper.PagosMixtosHabilitados;
+
                 Log.Info("Control Devoluciones");
 
                 var mercadoPagosFiltrados = mercadoPagos
@@ -164,22 +166,30 @@ namespace StockNotifier
 
                         try
                         {
-                            var operacionMixta = BuscarOperacionMixtaPorPaymentId(db, idPayment);
                             var paymentIdsADevolver = new List<long>();
 
-                            if (operacionMixta != null)
+                            if (pagosMixtosHabilitados)
                             {
-                                if (operacionMixta.PaymentId1.HasValue)
-                                {
-                                    paymentIdsADevolver.Add(operacionMixta.PaymentId1.Value);
-                                }
+                                var operacionMixta = BuscarOperacionMixtaPorPaymentId(db, idPayment);
 
-                                if (operacionMixta.PaymentId2.HasValue && operacionMixta.PaymentId2.Value != operacionMixta.PaymentId1)
+                                if (operacionMixta != null)
                                 {
-                                    paymentIdsADevolver.Add(operacionMixta.PaymentId2.Value);
-                                }
+                                    if (operacionMixta.PaymentId1.HasValue)
+                                    {
+                                        paymentIdsADevolver.Add(operacionMixta.PaymentId1.Value);
+                                    }
 
-                                Log.Info($"Pago mixto detectado para Comprobante={mercadoPago.Comprobante}. PaymentIds a devolver: {string.Join(",", paymentIdsADevolver)}");
+                                    if (operacionMixta.PaymentId2.HasValue && operacionMixta.PaymentId2.Value != operacionMixta.PaymentId1)
+                                    {
+                                        paymentIdsADevolver.Add(operacionMixta.PaymentId2.Value);
+                                    }
+
+                                    Log.Info($"Pago mixto detectado para Comprobante={mercadoPago.Comprobante}. PaymentIds a devolver: {string.Join(",", paymentIdsADevolver)}");
+                                }
+                                else
+                                {
+                                    paymentIdsADevolver.Add(idPayment);
+                                }
                             }
                             else
                             {
@@ -277,20 +287,22 @@ namespace StockNotifier
 
                 }
 
-                Log.Info("Control Devoluciones Mixtas Parciales");
-
-                int umbralMixtoMinutos = ObtenerUmbralMixtoParcialMinutos();
-                DateTime limiteMixto = DateTime.UtcNow.AddMinutes(-umbralMixtoMinutos);
-
-                var operacionesMixtasParciales = db.MercadoPagoOperacionMixta
-                    .Where(x => !x.Cerrada
-                        && x.PaymentId1 != null
-                        && x.ApprovedCount >= 1
-                        && x.FechaUltimaActualizacionUtc <= limiteMixto)
-                    .ToList();
-
-                foreach (var operacionMixta in operacionesMixtasParciales)
+                if (pagosMixtosHabilitados)
                 {
+                    Log.Info("Control Devoluciones Mixtas Parciales");
+
+                    int umbralMixtoMinutos = ObtenerUmbralMixtoParcialMinutos();
+                    DateTime limiteMixto = DateTime.UtcNow.AddMinutes(-umbralMixtoMinutos);
+
+                    var operacionesMixtasParciales = db.MercadoPagoOperacionMixta
+                        .Where(x => !x.Cerrada
+                            && x.PaymentId1 != null
+                            && x.ApprovedCount >= 1
+                            && x.FechaUltimaActualizacionUtc <= limiteMixto)
+                        .ToList();
+
+                    foreach (var operacionMixta in operacionesMixtasParciales)
+                    {
                     Log.Info($"Operacion mixta parcial detectada. OperadorId={operacionMixta.OperadorId} ExternalReference={operacionMixta.ExternalReference} ApprovedCount={operacionMixta.ApprovedCount} PaymentId1={operacionMixta.PaymentId1} PaymentId2={operacionMixta.PaymentId2} FechaUltimaActualizacionUtc={operacionMixta.FechaUltimaActualizacionUtc}");
 
                     var paymentIds = new List<long>();
@@ -384,6 +396,7 @@ namespace StockNotifier
                     db.Entry(operacionMixta).State = EntityState.Modified;
                     db.SaveChanges();
                     Log.Info($"Operacion mixta parcial cerrada. OperadorId={operacionMixta.OperadorId} ExternalReference={operacionMixta.ExternalReference}");
+                }
                 }
 
                 ProcesarListaStock("SistemaVT - Alarma Stock Muy Bajo", mailsStockMuyBajo);

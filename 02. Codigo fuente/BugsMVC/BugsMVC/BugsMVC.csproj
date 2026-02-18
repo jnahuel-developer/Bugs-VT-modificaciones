@@ -282,6 +282,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Helpers\SecurityHelper.cs" />
+    <Compile Include="Helpers\PagosMixtosConfigHelper.cs" />
     <Compile Include="Helpers\ViewHelper.cs" />
     <Compile Include="Helpers\HMTLHelperExtensions.cs" />
     <Compile Include="Helpers\jqGridHelper.cs" />

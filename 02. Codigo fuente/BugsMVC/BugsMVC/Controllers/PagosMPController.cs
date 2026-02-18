@@ -1,4 +1,5 @@
 ﻿using BugsMVC.DAL;
+using BugsMVC.Helpers;
 using BugsMVC.Models;
 using MercadoPago.Config;
 using MercadoPago.Resource.Payment;
@@ -177,7 +178,10 @@ namespace BugsMVC.Controllers
 
                     if (MercadoPagoConfig.AccessToken != null)
                     {
-                        await ProcesarPendientesMixtosExpirados(bugsDbContext, operador);
+                        if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
+                        {
+                            await ProcesarPendientesMixtosExpirados(bugsDbContext, operador);
+                        }
 
                         string version = ConfigurationManager.AppSettings["AppVersion"];
 
@@ -266,6 +270,12 @@ namespace BugsMVC.Controllers
                                 return;
                             }
 
+                            if (!PagosMixtosConfigHelper.PagosMixtosHabilitados)
+                            {
+                                Log.Info($"[{idComprobante}] - Se recibió un pago con estado Authorized y el modo de pagos mixtos se encuentra en OFF. El evento será descartado sin persistencia.");
+                                return;
+                            }
+
                             await RegistrarPagoMixtoAutorizado(bugsDbContext, operador, payment.ExternalReference);
                             return;
                         }
@@ -290,91 +300,94 @@ namespace BugsMVC.Controllers
                             {
                                 Log.Info($"[{idComprobante}] - External Reference Actualizado: {payment.ExternalReference} para el operador: {operador.Nombre}");
 
-                                if (await PagoMixtoYaProcesado(bugsDbContext, operador, idComprobante))
+                                if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
                                 {
-                                    Log.Info($"[{idComprobante}] - Payment ya procesado para operación mixta, descartando duplicado.");
-                                    return;
-                                }
-
-                                var operacionMixta = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, payment.ExternalReference);
-                                if (operacionMixta != null)
-                                {
-                                    if (OperacionMixtaExpirada(operacionMixta))
+                                    if (await PagoMixtoYaProcesado(bugsDbContext, operador, idComprobante))
                                     {
-                                        await CerrarPagoMixtoInconsistente(bugsDbContext, operacionMixta, operador);
+                                        Log.Info($"[{idComprobante}] - Payment ya procesado para operación mixta, descartando duplicado.");
                                         return;
                                     }
 
-                                    if (operacionMixta.PaymentId1 == idComprobante || operacionMixta.PaymentId2 == idComprobante)
+                                    var operacionMixta = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, payment.ExternalReference);
+                                    if (operacionMixta != null)
                                     {
-                                        Log.Info($"[{idComprobante}] - Payment repetido en operación mixta pendiente, descartando.");
-                                        return;
-                                    }
+                                        if (OperacionMixtaExpirada(operacionMixta))
+                                        {
+                                            await CerrarPagoMixtoInconsistente(bugsDbContext, operacionMixta, operador);
+                                            return;
+                                        }
 
-                                    operacionMixta.MontoAcumulado += monto;
-                                    operacionMixta.ApprovedCount += 1;
-                                    operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+                                        if (operacionMixta.PaymentId1 == idComprobante || operacionMixta.PaymentId2 == idComprobante)
+                                        {
+                                            Log.Info($"[{idComprobante}] - Payment repetido en operación mixta pendiente, descartando.");
+                                            return;
+                                        }
 
-                                    if (operacionMixta.PaymentId1 == null)
-                                    {
-                                        operacionMixta.PaymentId1 = idComprobante;
-                                    }
-                                    else if (operacionMixta.PaymentId2 == null)
-                                    {
-                                        operacionMixta.PaymentId2 = idComprobante;
-                                    }
-
-                                    if (operacionMixta.ApprovedCount < 2)
-                                    {
-                                        bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
-                                        await bugsDbContext.SaveChangesAsync();
-                                        return;
-                                    }
-
-                                    Maquina maquinaMixta = await ObtenerMaquinaPorExternalReference(bugsDbContext, payment.ExternalReference, operador, idComprobante, monto);
-                                    if (maquinaMixta == null)
-                                    {
-                                        return;
-                                    }
-
-                                    var paymentEntity = new MercadoPagoTable
-                                    {
-                                        Fecha = DateTime.Now,
-                                        Monto = operacionMixta.MontoAcumulado,
-                                        MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.ACREDITADO,
-                                        MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.EN_PROCESO,
-                                        Maquina = maquinaMixta,
-                                        FechaModificacionEstadoTransmision = null,
-                                        Comprobante = idComprobante.ToString(),
-                                        Entidad = "MP",
-                                        Operador = operador,
-                                    };
-
-                                    try
-                                    {
-                                        bugsDbContext.MercadoPagoTable.Add(paymentEntity);
-                                        operacionMixta.Cerrada = true;
-                                        operacionMixta.FechaCierreUtc = DateTime.UtcNow;
+                                        operacionMixta.MontoAcumulado += monto;
+                                        operacionMixta.ApprovedCount += 1;
                                         operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
-                                        await bugsDbContext.SaveChangesAsync();
-                                        await EnviarPagoAMaquina(bugsDbContext, paymentEntity);
-                                    }
-                                    catch (System.Data.Entity.Infrastructure.DbUpdateException ex)
-                                    {
-                                        var existente = await bugsDbContext.MercadoPagoTable
-                                            .FirstOrDefaultAsync(e => e.Comprobante == paymentEntity.Comprobante && e.Entidad == paymentEntity.Entidad);
 
-                                        if (existente != null)
+                                        if (operacionMixta.PaymentId1 == null)
                                         {
-                                            Log.Info($"[{idComprobante}] - Intento de inserción duplicada para Comprobante: {paymentEntity.Comprobante}. Ya existe con ID: {existente.MercadoPagoId}");
+                                            operacionMixta.PaymentId1 = idComprobante;
                                         }
-                                        else
+                                        else if (operacionMixta.PaymentId2 == null)
                                         {
-                                            Log.Warn($"[{idComprobante}] - Intento de inserción duplicada para Comprobante: {paymentEntity.Comprobante}, pero no se encontró el registro existente.");
+                                            operacionMixta.PaymentId2 = idComprobante;
                                         }
-                                    }
 
-                                    return;
+                                        if (operacionMixta.ApprovedCount < 2)
+                                        {
+                                            bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
+                                            await bugsDbContext.SaveChangesAsync();
+                                            return;
+                                        }
+
+                                        Maquina maquinaMixta = await ObtenerMaquinaPorExternalReference(bugsDbContext, payment.ExternalReference, operador, idComprobante, monto);
+                                        if (maquinaMixta == null)
+                                        {
+                                            return;
+                                        }
+
+                                        var paymentEntity = new MercadoPagoTable
+                                        {
+                                            Fecha = DateTime.Now,
+                                            Monto = operacionMixta.MontoAcumulado,
+                                            MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.ACREDITADO,
+                                            MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.EN_PROCESO,
+                                            Maquina = maquinaMixta,
+                                            FechaModificacionEstadoTransmision = null,
+                                            Comprobante = idComprobante.ToString(),
+                                            Entidad = "MP",
+                                            Operador = operador,
+                                        };
+
+                                        try
+                                        {
+                                            bugsDbContext.MercadoPagoTable.Add(paymentEntity);
+                                            operacionMixta.Cerrada = true;
+                                            operacionMixta.FechaCierreUtc = DateTime.UtcNow;
+                                            operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+                                            await bugsDbContext.SaveChangesAsync();
+                                            await EnviarPagoAMaquina(bugsDbContext, paymentEntity);
+                                        }
+                                        catch (System.Data.Entity.Infrastructure.DbUpdateException ex)
+                                        {
+                                            var existente = await bugsDbContext.MercadoPagoTable
+                                                .FirstOrDefaultAsync(e => e.Comprobante == paymentEntity.Comprobante && e.Entidad == paymentEntity.Entidad);
+
+                                            if (existente != null)
+                                            {
+                                                Log.Info($"[{idComprobante}] - Intento de inserción duplicada para Comprobante: {paymentEntity.Comprobante}. Ya existe con ID: {existente.MercadoPagoId}");
+                                            }
+                                            else
+                                            {
+                                                Log.Warn($"[{idComprobante}] - Intento de inserción duplicada para Comprobante: {paymentEntity.Comprobante}, pero no se encontró el registro existente.");
+                                            }
+                                        }
+
+                                        return;
+                                    }
                                 }
 
                                 Maquina maquina = await ObtenerMaquinaPorExternalReference(bugsDbContext, payment.ExternalReference, operador, idComprobante, monto);
