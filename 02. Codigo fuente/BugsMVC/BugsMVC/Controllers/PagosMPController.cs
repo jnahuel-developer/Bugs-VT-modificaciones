@@ -20,6 +20,7 @@ using System.Web.Mvc;
 using static BugsMVC.Controllers.PagosClienteController;
 using MercadoPago.Client.Payment;
 using MercadoPago.Error;
+using Newtonsoft.Json;
 
 namespace BugsMVC.Controllers
 {
@@ -200,6 +201,11 @@ namespace BugsMVC.Controllers
                         Guid maquinaId = Guid.Empty;
 
                         Payment payment = new Payment();
+                        string paymentStatus = string.Empty;
+                        decimal? paymentTransactionAmount = null;
+                        string paymentExternalReference = null;
+                        string paymentCurrencyId = null;
+                        string paymentMethodId = null;
                         try
                         {
                             //El semaphore limita a 1 el número de hilos que pueden acceder a este método al mismo tiempo. Es un FIFO.
@@ -209,10 +215,29 @@ namespace BugsMVC.Controllers
                             await PagoSemaphore.WaitAsync();
                             try
                             {
-                                //Intentamos obtener la información del payment utilizando el cliente nuevo
-                                PaymentClient paymentClient = new PaymentClient();
                                 Log.Info($"[{idComprobante}] - Intentando obtener información de payment...");
-                                payment = paymentClient.Get(idComprobante);
+
+                                if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
+                                {
+                                    Log.Info($"[{idComprobante}] - Se consultará el payment en mp_simulator.");
+                                    MpSimPaymentDto paymentSimulador = await ConsultarPaymentEnSimulador(idComprobante);
+                                    paymentStatus = paymentSimulador.status;
+                                    paymentTransactionAmount = paymentSimulador.transaction_amount;
+                                    paymentExternalReference = paymentSimulador.external_reference;
+                                    paymentCurrencyId = paymentSimulador.currency_id;
+                                    paymentMethodId = paymentSimulador.payment_method_id;
+                                }
+                                else
+                                {
+                                    //Intentamos obtener la información del payment utilizando el cliente nuevo
+                                    PaymentClient paymentClient = new PaymentClient();
+                                    payment = paymentClient.Get(idComprobante);
+                                    paymentStatus = payment.Status?.ToString();
+                                    paymentTransactionAmount = payment.TransactionAmount;
+                                    paymentExternalReference = payment.ExternalReference;
+                                    paymentCurrencyId = payment.CurrencyId;
+                                    paymentMethodId = payment.PaymentMethodId;
+                                }
                             }
                             finally
                             {
@@ -247,22 +272,22 @@ namespace BugsMVC.Controllers
 
                         Log.Info($"[{idComprobante}] - El pago fue encontrado y se encuentra procesando los datos");
 
-                        if (payment.Status == PaymentStatus.Authorized)
+                        if (EsEstadoPago(paymentStatus, PaymentStatus.Authorized.ToString()))
                         {
-                            Log.Error($"[{idComprobante}] - Mercado Pago status: {payment.Status}");
+                            Log.Error($"[{idComprobante}] - Mercado Pago status: {paymentStatus}");
 
-                            monto = (decimal)payment.TransactionAmount.Value;
+                            monto = paymentTransactionAmount ?? 0;
 
-                            /*Log.Info("External Reference:" + payment.ExternalReference + "
+                            /*Log.Info("External Reference:" + paymentExternalReference + "
                              Sergio Abril 2024 */
-                            Log.Info($"[{idComprobante}] - External Reference: " + payment.ExternalReference + ",Monto:" + monto);
-                            Log.Info($"[{idComprobante}] - CurrencyId: " + payment.CurrencyId);
+                            Log.Info($"[{idComprobante}] - External Reference: " + paymentExternalReference + ",Monto:" + monto);
+                            Log.Info($"[{idComprobante}] - CurrencyId: " + paymentCurrencyId);
                             //Log.Info("Date Aproved: " + payment.DateApproved);
-                            Log.Info($"[{idComprobante}] - Payment Method: " + payment.PaymentMethodId);
+                            Log.Info($"[{idComprobante}] - Payment Method: " + paymentMethodId);
                             //Log.Info("Colector ID: " + payment.CollectorId);
                             //Log.Info("Issuer ID: " + payment.IssuerId);
 
-                            if (string.IsNullOrWhiteSpace(payment.ExternalReference))
+                            if (string.IsNullOrWhiteSpace(paymentExternalReference))
                             {
                                 string mensajeDescripcion = "External Reference es nulo o vacío en pago autorizado.";
                                 Log.Error($"[{idComprobante}] - {mensajeDescripcion}");
@@ -276,29 +301,29 @@ namespace BugsMVC.Controllers
                                 return;
                             }
 
-                            await RegistrarPagoMixtoAutorizado(bugsDbContext, operador, payment.ExternalReference);
+                            await RegistrarPagoMixtoAutorizado(bugsDbContext, operador, paymentExternalReference);
                             return;
                         }
 
 
 
-                        if (payment.Status == PaymentStatus.Approved)
+                        if (EsEstadoPago(paymentStatus, PaymentStatus.Approved.ToString()))
                         {
-                            monto = (decimal)payment.TransactionAmount.Value;
+                            monto = paymentTransactionAmount ?? 0;
 
-                            /*Log.Info("External Reference:" + payment.ExternalReference + "
+                            /*Log.Info("External Reference:" + paymentExternalReference + "
                              Sergio Abril 2024 */
-                            Log.Info($"[{idComprobante}] - External Reference: " + payment.ExternalReference + ",Monto:" + monto);
-                            Log.Info($"[{idComprobante}] - CurrencyId: " + payment.CurrencyId);
+                            Log.Info($"[{idComprobante}] - External Reference: " + paymentExternalReference + ",Monto:" + monto);
+                            Log.Info($"[{idComprobante}] - CurrencyId: " + paymentCurrencyId);
                             //Log.Info("Date Aproved: " + payment.DateApproved);
-                            Log.Info($"[{idComprobante}] - Payment Method: " + payment.PaymentMethodId);
+                            Log.Info($"[{idComprobante}] - Payment Method: " + paymentMethodId);
                             //Log.Info("Colector ID: " + payment.CollectorId);
                             //Log.Info("Issuer ID: " + payment.IssuerId);
 
                             //External Reference de Payment
-                            if (payment.ExternalReference != null)
+                            if (paymentExternalReference != null)
                             {
-                                Log.Info($"[{idComprobante}] - External Reference Actualizado: {payment.ExternalReference} para el operador: {operador.Nombre}");
+                                Log.Info($"[{idComprobante}] - External Reference Actualizado: {paymentExternalReference} para el operador: {operador.Nombre}");
 
                                 if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
                                 {
@@ -308,7 +333,7 @@ namespace BugsMVC.Controllers
                                         return;
                                     }
 
-                                    var operacionMixta = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, payment.ExternalReference);
+                                    var operacionMixta = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, paymentExternalReference);
                                     if (operacionMixta != null)
                                     {
                                         if (OperacionMixtaExpirada(operacionMixta))
@@ -343,7 +368,7 @@ namespace BugsMVC.Controllers
                                             return;
                                         }
 
-                                        Maquina maquinaMixta = await ObtenerMaquinaPorExternalReference(bugsDbContext, payment.ExternalReference, operador, idComprobante, monto);
+                                        Maquina maquinaMixta = await ObtenerMaquinaPorExternalReference(bugsDbContext, paymentExternalReference, operador, idComprobante, monto);
                                         if (maquinaMixta == null)
                                         {
                                             return;
@@ -390,7 +415,7 @@ namespace BugsMVC.Controllers
                                     }
                                 }
 
-                                Maquina maquina = await ObtenerMaquinaPorExternalReference(bugsDbContext, payment.ExternalReference, operador, idComprobante, monto);
+                                Maquina maquina = await ObtenerMaquinaPorExternalReference(bugsDbContext, paymentExternalReference, operador, idComprobante, monto);
                                 if (maquina == null)
                                 {
                                     return;
@@ -442,7 +467,7 @@ namespace BugsMVC.Controllers
                         }
                         else
                         {
-                            Log.Error($"[{idComprobante}] - Mercado Pago status: {payment.Status}");
+                            Log.Error($"[{idComprobante}] - Mercado Pago status: {paymentStatus}");
                             return;
                         }
                     }
@@ -746,6 +771,48 @@ namespace BugsMVC.Controllers
             }
 
             return result;
+        }
+
+        private async Task<MpSimPaymentDto> ConsultarPaymentEnSimulador(long idComprobante)
+        {
+            string url = $"http://127.0.0.1:5005/v1/payments/{idComprobante}";
+
+            using (var httpClient = new HttpClient())
+            {
+                HttpResponseMessage response = await httpClient.GetAsync(url);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    throw new Exception($"No se encontró el payment {idComprobante} en mp_simulator.");
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                string json = await response.Content.ReadAsStringAsync();
+                MpSimPaymentDto payment = JsonConvert.DeserializeObject<MpSimPaymentDto>(json);
+
+                if (payment == null)
+                {
+                    throw new Exception($"No se pudo deserializar la respuesta del payment {idComprobante} en mp_simulator.");
+                }
+
+                return payment;
+            }
+        }
+
+        private bool EsEstadoPago(string estadoActual, string estadoEsperado)
+        {
+            return string.Equals(estadoActual, estadoEsperado, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private class MpSimPaymentDto
+        {
+            public long id { get; set; }
+            public string status { get; set; }
+            public decimal? transaction_amount { get; set; }
+            public string external_reference { get; set; }
+            public string currency_id { get; set; }
+            public string payment_method_id { get; set; }
         }
 
         #region Funciones no utilizadas
