@@ -1,0 +1,186 @@
+USE BugsDev;
+GO
+
+PRINT '--- Transaccion (muestra aleatoria) ---';
+SELECT TOP 10 TransaccionID, LocacionID, UsuarioID, MaquinaID, TerminalID
+FROM Transaccion
+ORDER BY NEWID();
+
+PRINT '--- Usuario ---';
+SELECT
+    UsuarioID,
+    Numero,
+    Nombre,
+    Apellido,
+    Dni,
+    Legajo,
+    OperadorID,
+    LocacionID,
+    JerarquiaID,
+    FechaCreacion,
+    Inhibido
+FROM Usuario
+ORDER BY Apellido, Nombre, Numero;
+
+PRINT '--- Operador ---';
+SELECT
+    OperadorID,
+    Numero,
+    Nombre,
+    TiempoAvisoInhibicion,
+    TiempoAvisoConexion,
+    SecretToken,
+    AccessToken
+FROM Operador
+ORDER BY Numero;
+
+PRINT '--- Locacion ---';
+SELECT
+    LocacionID,
+    Nombre,
+    Numero,
+    CUIT,
+    OperadorID
+FROM Locacion
+ORDER BY Nombre;
+
+PRINT '--- Jerarquia ---';
+SELECT
+    JerarquiaID,
+    Nombre,
+    LocacionID
+FROM Jerarquia
+ORDER BY Nombre;
+
+PRINT '--- Maquina ---';
+SELECT
+    MaquinaID,
+    NumeroSerie,
+    NombreAlias,
+    OperadorID,
+    LocacionID,
+    TerminalID,
+    MarcaModeloID,
+    TipoProductoID
+FROM Maquina
+ORDER BY NumeroSerie;
+
+PRINT '--- Terminal ---';
+SELECT
+    TerminalID,
+    NumeroSerie,
+    Interfaz,
+    Version,
+    OperadorID,
+    ModeloTerminalID
+FROM Terminal
+ORDER BY NumeroSerie;
+
+PRINT '--- AspNetUsers ---';
+SELECT
+    Id AS AspNetUserId,
+    UsuarioID,
+    Email,
+    UserName
+FROM AspNetUsers
+ORDER BY Email, UserName;
+
+PRINT '--- AspNetRoles ---';
+SELECT
+    Id AS RoleId,
+    Name,
+    [Weight]
+FROM AspNetRoles
+ORDER BY [Weight] DESC, Name;
+
+PRINT '--- AspNetUserRoles (asignaciones) ---';
+SELECT
+    ur.UserId,
+    u.Email,
+    ur.RoleId,
+    r.Name AS RoleName
+FROM AspNetUserRoles ur
+LEFT JOIN AspNetUsers u ON u.Id = ur.UserId
+LEFT JOIN AspNetRoles r ON r.Id = ur.RoleId
+ORDER BY u.Email, r.Name;
+
+PRINT '--- Transaccion ---';
+SELECT TOP 200
+    TransaccionID,
+    FechaTransaccion,
+    CodigoTransaccion,
+    ValorVenta,
+    ValorRecarga,
+    UsuarioID,
+    LocacionID,
+    OperadorID,
+    MaquinaID,
+    TerminalID,
+    JerarquiaID
+FROM Transaccion
+ORDER BY FechaTransaccion DESC;
+
+PRINT '--- TransaccionesMal ---';
+SELECT TOP 200
+    IdTransaccionMal,
+    FechaDescarga,
+    Motivo,
+    LocacionID,
+    OperadorID,
+    MaquinaID,
+    TerminalID
+FROM TransaccionesMal
+ORDER BY FechaDescarga DESC;
+
+PRINT '--- MercadoPagoTable ---';
+SELECT TOP 200
+    MercadoPagoId,
+    Fecha,
+    Monto,
+    MaquinaId,
+    OperadorId,
+    MercadoPagoEstadoFinancieroId,
+    MercadoPagoEstadoTransmisionId,
+    Reintentos
+FROM MercadoPagoTable
+ORDER BY Fecha DESC;
+
+PRINT '--- Stock ---';
+SELECT TOP 200
+    StockID,
+    Cantidad,
+    ArticuloAsignacionID,
+    UsuarioIDEdicionWeb,
+    FechaAviso,
+    FechaEdicionWeb,
+    FechaEdicionVT
+FROM Stock
+ORDER BY StockID;
+
+PRINT '--- StockHistorico ---';
+SELECT TOP 200
+    StockHistoricoID,
+    StockID,
+    TipoDeMovimientoID,
+    Fecha,
+    UsuarioID,
+    Cantidad,
+    FechaAviso
+FROM StockHistorico
+ORDER BY Fecha DESC;
+
+PRINT '--- MercadoPagoOperacionMixta ---';
+SELECT TOP (200)
+    MercadoPagoOperacionMixtaId,
+    OperadorId,
+    ExternalReference,
+    FechaAuthorizedUtc,
+    MontoAcumulado,
+    ApprovedCount,
+    PaymentId1,
+    PaymentId2,
+    Cerrada,
+    FechaCierreUtc,
+    FechaUltimaActualizacionUtc
+FROM dbo.MercadoPagoOperacionMixta
+ORDER BY MercadoPagoOperacionMixtaId DESC;
