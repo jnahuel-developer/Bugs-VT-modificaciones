@@ -1,0 +1,77 @@
+﻿@model BugsMVC.Models.ViewModels.ConsumidorViewModel
+
+@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.EntityFramework
+@using BugsMVC.Models
+@using BugsMVC.DAL
+@using BugsMVC.Helpers
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    @Styles.Render("~/bundles/datatablesCss")
+    @Styles.Render("~/bundles/jqGridCss")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/datatables")
+    @Scripts.Render("~/bundles/jqGrid")
+}
+
+
+<h3>
+    Mi Cuenta
+    <small>Datos de la Cuenta.</small>
+</h3>
+
+
+
+<div class="row">
+    <div class="col-lg-3 col-sm-6 col-sm-6">
+        <!-- START widget-->
+        <div class="panel widget bg-primary">
+            <div class="row row-table">
+                <div class="col-xs-4 text-center bg-primary-dark pv-lg">
+                    <em class="icon-basket fa-3x"></em>
+                </div>
+                <div class="col-xs-8 pv-lg">
+                    <div class="h2 mt0">@Model.CantidadTransacciones</div>
+                    <div class="text-uppercase texto-consumidor">Cantidad de Transacciones en el mes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6 col-sm-6">
+        <!-- START widget-->
+        <div class="panel widget bg-purple">
+            <div class="row row-table">
+                <div class="col-xs-4 text-center bg-purple-dark pv-lg">
+                    <em class="icon-pie-chart fa-3x"></em>
+                </div>
+                <div class="col-xs-8 pv-lg">
+                    <div class="h2 mt0">
+                        @Model.MontoTotalTransacciones
+                    </div>
+                    <div class="text-uppercase texto-consumidor">Monto Total Transacciones en el mes</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 col-sm-12">
+        <!-- START widget-->
+        <div class="panel widget bg-green">
+            <div class="row row-table">
+                <div class="col-xs-4 text-center bg-green-dark pv-lg">
+                    <em class="icon-credit-card fa-3x"></em>
+                </div>
+                <div class="col-xs-8 pv-lg">
+                    <div class="h2 mt0">@(Model.CreditoZona1+Model.CreditoZona2+Model.CreditoZona3+Model.MontoRecargaZona4+Model.CreditoZona5+Model.Efectivo)</div>
+                    <div class="text-uppercase texto-consumidor">Saldo</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

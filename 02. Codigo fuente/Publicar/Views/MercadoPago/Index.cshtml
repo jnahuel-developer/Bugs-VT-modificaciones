@@ -1,0 +1,182 @@
+﻿@model IEnumerable<BugsMVC.Models.ViewModels.MercadoPagoViewModel>
+@using BugsMVC.Helpers
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    @Styles.Render("~/bundles/datatablesCss")
+    @Styles.Render("~/bundles/jqGridCss")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/datatables")
+    @Scripts.Render("~/bundles/jqGrid")
+}
+
+
+<h3>
+    Pagos Externos
+    <small>Operaciones realizadas.</small>
+</h3>
+
+<div>
+    @using (Html.BeginForm("ExportData", "MercadoPago", FormMethod.Post, new { enctype = "multipart/form-data", style = "display: inline;" }))
+    {
+        <input type="submit" name="Export" id="Export" value="Excel" onclick="exportToExcel();" class="btn btn-default" />
+        <input type="hidden" name="jqGridPostData" id="jqGridPostData" />
+    }
+
+    @if (SecurityHelper.IsAllowed((int)Permissions.PagosExternos.DeleteRange))
+    {
+        @Html.ActionLink("Eliminar Rango", "DeleteRange", null, new { @class = "btn btn-default" })
+    }
+
+</div>
+
+<br />
+<div class="jqgrid-responsive mb-lg">
+    <table id="jqGridJSON"></table>
+    <div id="jqGridJSONPager"></div>
+</div>
+
+
+<script>
+    (function (window, document, $, undefined) {
+        $('body').append("<div id='myModal' tabindex='-1' role='dialog' aria-labelledby='myModalLabel' aria-hidden='true' class='modal fade'>" +
+            "<div class='modal-dialog' role='document'> " +
+            "<div class='modal-content'>" +
+            "<div class='modal-header'> " +
+            "<button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button>" +
+            "<h4 class='modal-title'>Remover Zona</h4>" + "</div>" +
+               " <div class='modal-body'>" +
+                   " <p>¿ Desea Ud. remover la Zona seleccionada ?</p>" +
+                   "Se desasignaran las máquinas asociadas a esta zona" +
+               " </div>" +
+               " <div class='modal-footer'>" +
+                   " <button type='button' class='btn btn-primary' id='removeButton'>Confirmar</button>" +
+                   " <button type='button' class='btn btn-default' data-dismiss='modal'>Volver</button>" +
+                "</div>" +
+            "</div>" +
+            " </div>" +
+            "</div>"
+            );
+
+        $(function () {
+
+            var gridJSON = $("#jqGridJSON");
+
+            $('#ClearFilters').on('click', function () {
+                clearSearchOptions(gridJSON, '/MercadoPago/ClearSession');
+            });
+
+            gridJSON.jqGrid({
+                url: 'MercadoPago/GetAllMercadoPagos',
+                datatype: "json",
+                colModel: [
+                    {
+                        label: '',
+                        name: '',
+                        width: 65,
+                        fixed: true,
+                        search: false,
+                        sortable: false,
+                        resize: false,
+                        formatter: actionButtonsFormatter,
+                    },
+                    { label: 'MercadoPagoId', name: 'MercadoPagoId', hidden: true },
+                    { label: 'Operador', name: 'OperadorNombre', hidden : @Json.Encode((!User.IsInRole("SuperAdmin"))) }, //Modificacion para falla 200
+                    { label: 'Comprobante', name: 'Comprobante' },
+                    { label: 'Monto', name: 'Monto', sorttype: 'number', formatter: 'number', formatoptions: { decimalSeparator: ",", thousandsSeparator: ".", decimalPlaces: 2, prefix: "$ " }, searchoptions: { sopt: ['eq'] } },
+                    {
+                        label: 'Fecha', name: 'Fecha', search: true, searchOnEnter: true, sorttype: 'date', formatter: 'date', formatoptions: { "srcformat": "d/m/Y H:i:s", "newformat": "d/m/Y H:i:s" }
+                        , searchoptions: getDefaultSearchOptionsForDate()
+                    },
+                    { label: 'Estado Transmisión', name: 'MercadoPagoEstadoTransmisionDescripcion' },
+                    { label: 'Estado Financiero', name: 'MercadoPagoEstadoFinancieroDescripcion' },
+                    { label: 'ID Caja MP', name: 'NotaService' },
+                    { label: 'Locacion', name: 'Locacion' },
+                    { label: 'N° Serie Maquina', name: 'MaquinaDescripcion' },
+                    { label: 'N° Serie Terminal', name: 'NroSerieTerminal' },
+                    { label: 'Entidad', name: 'Entidad' },
+                    { label: 'Descripción', name: 'Descripcion' },
+
+                ],
+                viewrecords: true, // show the current page, data rang and total records on the toolbar
+                autowidth: true,
+                shrinkToFit: false,
+                height: 240,
+                rowNum: 20,
+                rowList: [10, 20, 30],
+                loadonce: false, // this is just for the demo
+                caption: "Pagos Externos",
+                hidegrid: false,
+                ignoreCase: true,
+                pager: "#jqGridJSONPager",
+
+            });
+
+            //
+            // Filtering by Columns
+            //
+            //gridJSON.jqGrid('filterToolbar', { stringResult: true, searchOnEnter: true, defaultSearch: "cn" });
+            gridJSON.jqGrid('filterToolbar', {
+                stringResult: true, searchOnEnter: true, defaultSearch: "cn", beforeSearch: function () {
+                    return false;
+                }
+            });
+
+            //agregado new
+            $('.ui-jqgrid-title').after('<label class="filter-help-text"><span class="fa fa-info-circle "></span> Presione enter para aplicar filtros</label>')
+
+        });
+
+        $(document).on('click', '#DevolverDinero', function (e) {
+            DevolverDinero($(this).data("comprobante"));
+        });
+
+    })(window, document, window.jQuery);
+
+    function actionButtonsFormatter(cellvalue, options, rowObject) {
+
+        //Este boton es para las devolucion del registro seleccionado
+        //var linkButton = '<a id="DevolverDinero" data-comprobante=' + rowObject.Comprobante + ' data-placement="left" data-original-title="Devolver Dinero" class="fa '
+        //  + "fa-plus-circle" + ' cursor-pointer"> </a> ';
+        // linkButton = @Json.Encode(SecurityHelper.IsAllowed((int)Permissions.PagosExternos.Delete))? linkButton + '<a href="MercadoPago/Delete/' + rowObject.MercadoPagoId + '" data-toggle="tooltip" data-placement="left" data-original-title="Delete" class="fa fa-remove"> </a>' : linkButton;
+        var linkButton = @Json.Encode(SecurityHelper.IsAllowed((int)Permissions.PagosExternos.Delete))? '<a href="MercadoPago/Delete/' + rowObject.MercadoPagoId + '" data-toggle="tooltip" data-placement="left" data-original-title="Delete" class="fa fa-remove"> </a>' : '';
+
+        return linkButton;
+    }
+
+    function exportToExcel() {
+        var data = JSON.stringify($('#jqGridJSON').jqGrid('getGridParam', 'postData'));
+        $('#jqGridPostData').val(data);
+    }
+
+    function DevolverDinero(comprobante) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DevolverDinero", "MercadoPago")',
+            data: {
+                Comprobante: comprobante
+            },
+            dataType: 'json',
+            success: function () {
+                $("#jqGridJSON")
+                    .jqGrid('setGridParam',
+                        {
+                            url: 'MercadoPago/GetAllMercadoPagos',
+                            datatype: "json",
+                            postData: { Comprobante: function () { return $("#Comprobante").val(); } },
+                            width: 700
+                        })
+                    .trigger("reloadGrid");
+            },
+            error: function (ex) {
+                alert('Hubo un error al obtener.' + ex);
+            }
+        });
+    }
+</script>

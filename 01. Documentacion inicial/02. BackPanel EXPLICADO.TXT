@@ -1,0 +1,116 @@
+
+Este log es del controler de PAGOS MP CONTROLER (pagos externos), es el mismo que el original adjunto pero acomodado y explicado
+En esta parte reporta "status: in_process" en realidad no sirve para nada, MP manda una IPN pero solo avisa que lo esta haciendo.
+
+2025-12-17 00:01:34,399 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 137594342667 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=137594342667&operador=3&topic=payment
+2025-12-17 00:01:34,414 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-17 00:01:34,414 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 137594342667, operador=3, version=1.1.6
+2025-12-17 00:01:34,461 - INFO - [137594342667] - Esperando turno en la fila para obtener payment...
+2025-12-17 00:01:34,461 - INFO - [137594342667] - Intentando obtener información de payment...
+2025-12-17 00:01:35,102 - INFO - [137594342667] - finalizada fila de payment.
+2025-12-17 00:01:35,102 - INFO - [137594342667] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-17 00:01:35,102 - ERROR - [137594342667] - Mercado Pago status: in_process
+2025-12-17 00:01:35,102 - INFO - [137594342667] - Finalizó el proceso de RegistrarPago.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+Pago completo, correcto
+Comprobante de MP = 137594342667
+Reference del QR que escanearon = Cozzuol_001116
+Monto = $1050
+Payment Method = interop_transfer (significa que fue pagado desde una billetera que no es MP, por ej. MODO) no es relevante por el momento
+operador Value: 3  >> indica que la IPN tiene un parametro = 3 que nos indica el numero de OPERADOR 
+48c023f8-3d7a-4617-85b4-0d4fef7aca5d >> es el ID de la maquina que tiene el REFERENCE Cozzuol_001116 a quien hay que enviarle este pago
+
+2025-12-17 00:01:36,524 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 137594342667 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=137594342667&operador=3&topic=payment
+2025-12-17 00:01:36,524 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-17 00:01:36,524 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 137594342667, operador=3, version=1.1.6
+2025-12-17 00:01:36,586 - INFO - [137594342667] - Esperando turno en la fila para obtener payment...
+2025-12-17 00:01:36,586 - INFO - [137594342667] - Intentando obtener información de payment...
+2025-12-17 00:01:36,758 - INFO - [137594342667] - finalizada fila de payment.
+2025-12-17 00:01:36,758 - INFO - [137594342667] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-17 00:01:36,758 - INFO - [137594342667] - External Reference: Cozzuol_001116,Monto:1050
+2025-12-17 00:01:36,758 - INFO - [137594342667] - CurrencyId: ARS
+2025-12-17 00:01:36,758 - INFO - [137594342667] - Payment Method: interop_transfer
+2025-12-17 00:01:36,758 - INFO - [137594342667] - External Reference Actualizado: Cozzuol_001116 para el operador: GB Expendedoras
+2025-12-17 00:01:36,774 - INFO - [137594342667] - Enviando pago a máquina...
+2025-12-17 00:01:36,774 - INFO - [137594342667] - Intento 1 de 1 para enviar pago a máquina 48c023f8-3d7a-4617-85b4-0d4fef7aca5d
+
+nota 1
+2025-12-17 00:07:15,853 - INFO - [137594342667] - Enviado correctamente a máquina: 48c023f8-3d7a-4617-85b4-0d4fef7aca5d
+2025-12-17 00:07:15,853 - INFO - [137594342667] - Finalizó envío a máquina.
+2025-12-17 00:07:15,853 - INFO - [137594342667] - Finalizó el proceso de RegistrarPago.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.
+esta parte es lo quedo encolado del pago que no esta en este log, ya que se cierra y se abre uno nuevo a las cero hs.
+
+2025-12-17 00:01:36,774 - INFO - [137593618097] - Enviado correctamente a máquina: b9dc3377-b846-42f2-812e-3abfe7bda4b7
+2025-12-17 00:01:36,774 - INFO - [137593618097] - Finalizó envío a máquina.
+2025-12-17 00:01:36,774 - INFO - [137593618097] - Finalizó el proceso de RegistrarPago.
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Pasa seguido, que MP envia nuevamente la notificacion y es desacrtada porque ya estaba procesada
+
+2025-12-17 00:01:39,758 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 137594342667 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=137594342667&operador=3&topic=payment
+2025-12-17 00:01:39,758 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-17 00:01:39,758 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 137594342667, operador=3, version=1.1.6
+2025-12-17 00:01:39,821 - INFO - [137594342667] - La notificación ya fue recibida y procesada anteriormente
+2025-12-17 00:01:39,821 - INFO - [137594342667] - Finalizó el proceso de RegistrarPago.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+Pago completo 
+2025-12-17 00:07:15,134 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 9 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 137594750823 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=137594750823&operador=9&topic=payment
+2025-12-17 00:07:15,134 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-17 00:07:15,134 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 137594750823, operador=9, version=1.1.6
+2025-12-17 00:07:15,196 - INFO - [137594750823] - Esperando turno en la fila para obtener payment...
+2025-12-17 00:07:15,196 - INFO - [137594750823] - Intentando obtener información de payment...
+2025-12-17 00:07:15,837 - INFO - [137594750823] - finalizada fila de payment.
+2025-12-17 00:07:15,837 - INFO - [137594750823] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-17 00:07:15,837 - INFO - [137594750823] - External Reference: HospMilitar_158,Monto:4000
+2025-12-17 00:07:15,837 - INFO - [137594750823] - CurrencyId: ARS
+2025-12-17 00:07:15,837 - INFO - [137594750823] - Payment Method: master
+2025-12-17 00:07:15,837 - INFO - [137594750823] - External Reference Actualizado: HospMilitar_158 para el operador: Expend Matic
+2025-12-17 00:07:15,853 - INFO - [137594750823] - Enviando pago a máquina...
+2025-12-17 00:07:15,853 - INFO - [137594750823] - Intento 1 de 1 para enviar pago a máquina fbce378f-1dae-4611-9690-da1e7f21145c
+
+nota 1
+2025-12-17 00:08:59,275 - INFO - [137594750823] - Enviado correctamente a máquina: fbce378f-1dae-4611-9690-da1e7f21145c
+2025-12-17 00:08:59,275 - INFO - [137594750823] - Finalizó envío a máquina.
+2025-12-17 00:08:59,275 - INFO - [137594750823] - Finalizó el proceso de RegistrarPago.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Pago completo 
+
+2025-12-17 00:08:58,478 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 8 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 138232084694 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=138232084694&operador=8&topic=payment
+2025-12-17 00:08:58,478 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-17 00:08:58,478 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 138232084694, operador=8, version=1.1.6
+2025-12-17 00:08:58,540 - INFO - [138232084694] - Esperando turno en la fila para obtener payment...
+2025-12-17 00:08:58,540 - INFO - [138232084694] - Intentando obtener información de payment...
+2025-12-17 00:08:59,259 - INFO - [138232084694] - finalizada fila de payment.
+2025-12-17 00:08:59,259 - INFO - [138232084694] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-17 00:08:59,259 - INFO - [138232084694] - External Reference: Novax_71,Monto:2400
+2025-12-17 00:08:59,259 - INFO - [138232084694] - CurrencyId: ARS
+2025-12-17 00:08:59,259 - INFO - [138232084694] - Payment Method: debvisa
+2025-12-17 00:08:59,259 - INFO - [138232084694] - External Reference Actualizado: Novax_71 para el operador: ORAC
+2025-12-17 00:08:59,275 - INFO - [138232084694] - Enviando pago a máquina...
+2025-12-17 00:08:59,275 - INFO - [138232084694] - Intento 1 de 1 para enviar pago a máquina b730f74d-49ac-49f8-bc0c-221acb477941
+
+Nota 1
+2025-12-17 00:19:03,620 - INFO - [138232084694] - Enviado correctamente a máquina: b730f74d-49ac-49f8-bc0c-221acb477941
+2025-12-17 00:19:03,620 - INFO - [138232084694] - Finalizó envío a máquina.
+2025-12-17 00:19:03,620 - INFO - [138232084694] - Finalizó el proceso de RegistrarPago.
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+La Nota 1 la agregue para mostrarte que ese pedacito esta desfasado en el tiempo, si te fijas en el file original vas a notar que esta mezclado entre el log mas adelante en el tiempo, 
+esto se debe a que va encolando IPNs que entran y resolviendo, ya que pasaba que entraban dos juntas en el tiempo y hubo que hacer una modificacion de ENCOLAR

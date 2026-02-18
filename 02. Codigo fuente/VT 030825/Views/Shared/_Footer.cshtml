@@ -1,0 +1,18 @@
+@using System.Web.Configuration
+
+<span>
+    &copy; @System.DateTime.Now.Year - Bugs Soluciones Electrónicas S.A. -
+    <a href="http://www.bugssa.com.ar" target="_blank">www.bugssa.com.ar</a>
+</span>
+<span>
+    - Versión:
+    @{
+        string version = WebConfigurationManager.AppSettings["AppVersion"];
+#if true
+        version += "";
+#else
+        version += "";
+#endif
+    }
+    @version
+</span>

@@ -1,0 +1,59 @@
+************
+Llega la primera notificación: status: authorized, id= 135601127719, External Reference: BGSQR_05500
+************
+
+2025-12-02 21:07:35,316 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 135601127719 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?Operador=5&id=135601127719&topic=payment
+2025-12-02 21:07:35,316 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-02 21:07:35,316 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 135601127719, operador=5, version=1.1.4
+2025-12-02 21:07:35,347 - INFO - [135601127719] - Esperando turno en la fila para obtener payment...
+2025-12-02 21:07:35,347 - INFO - [135601127719] - Intentando obtener informaci n de payment...
+2025-12-02 21:07:35,847 - INFO - [135601127719] - finalizada fila de payment.
+2025-12-02 21:07:35,847 - INFO - [135601127719] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-02 21:07:35,847 - ERROR - [135601127719] - Mercado Pago status: authorized
+2025-12-02 21:07:35,847 - INFO - [135601127719] - External Reference: BGSQR_05500,Monto:420.73
+2025-12-02 21:07:35,847 - INFO - [135601127719] - CurrencyId: ARS
+2025-12-02 21:07:35,847 - INFO - [135601127719] - Payment Method: account_money
+2025-12-02 21:07:35,847 - ERROR - [135601127719] - Mercado Pago status: authorized
+2025-12-02 21:07:35,847 - INFO - [135601127719] - Finaliz  el proceso de RegistrarPago.
+
+
+************
+Llega la segunda notificación: id= 136220249654, External Reference: BGSQR_05500
+************
+2025-12-02 21:07:37,910 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 136220249654 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?Operador=5&id=136220249654&topic=payment
+2025-12-02 21:07:37,910 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-02 21:07:37,910 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 136220249654, operador=5, version=1.1.4
+2025-12-02 21:07:37,941 - INFO - [136220249654] - Esperando turno en la fila para obtener payment...
+2025-12-02 21:07:37,941 - INFO - [136220249654] - Intentando obtener informaci n de payment...
+2025-12-02 21:07:38,128 - INFO - [136220249654] - finalizada fila de payment.
+2025-12-02 21:07:38,128 - INFO - [136220249654] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-02 21:07:38,128 - INFO - [136220249654] - External Reference: BGSQR_05500,Monto:9.27
+2025-12-02 21:07:38,128 - INFO - [136220249654] - CurrencyId: ARS
+2025-12-02 21:07:38,128 - INFO - [136220249654] - Payment Method: master
+2025-12-02 21:07:38,128 - INFO - [136220249654] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2025-12-02 21:07:38,128 - INFO - [136220249654] - Enviando pago a m quina...
+2025-12-02 21:07:38,128 - INFO - [136220249654] - Intento 1 de 3 para enviar pago a m quina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2025-12-02 21:07:38,128 - INFO - [135576183553] - Enviado correctamente a m quina: 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2025-12-02 21:07:38,128 - INFO - [135576183553] - Finaliz  env o a m quina.
+2025-12-02 21:07:38,128 - INFO - [135576183553] - Finaliz  el proceso de RegistrarPago.
+
+
+************
+Llega la tercer notificación: id= 135601127719, External Reference: BGSQR_05500
+************
+2025-12-02 21:07:38,378 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 135601127719 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?Operador=5&id=135601127719&topic=payment
+2025-12-02 21:07:38,378 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2025-12-02 21:07:38,378 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 135601127719, operador=5, version=1.1.4
+2025-12-02 21:07:38,410 - INFO - [135601127719] - Esperando turno en la fila para obtener payment...
+2025-12-02 21:07:38,410 - INFO - [135601127719] - Intentando obtener informaci n de payment...
+2025-12-02 21:07:38,597 - INFO - [135601127719] - finalizada fila de payment.
+2025-12-02 21:07:38,597 - INFO - [135601127719] - El pago fue encontrado y se encuentra procesando los datos
+2025-12-02 21:07:38,597 - INFO - [135601127719] - External Reference: BGSQR_05500,Monto:420.73
+2025-12-02 21:07:38,597 - INFO - [135601127719] - CurrencyId: ARS
+2025-12-02 21:07:38,597 - INFO - [135601127719] - Payment Method: account_money
+2025-12-02 21:07:38,597 - INFO - [135601127719] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2025-12-02 21:07:38,597 - INFO - [135601127719] - Enviando pago a m quina...
+2025-12-02 21:07:38,597 - INFO - [135601127719] - Intento 1 de 3 para enviar pago a m quina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2025-12-02 21:07:38,613 - INFO - [136220249654] - Enviado correctamente a m quina: 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2025-12-02 21:07:38,613 - INFO - [136220249654] - Finaliz  env o a m quina.
+2025-12-02 21:07:38,613 - INFO - [136220249654] - Finaliz  el proceso de RegistrarPago.
