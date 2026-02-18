@@ -689,6 +689,37 @@ namespace BugsMVC.Controllers
             }
             else
             {
+                long? paymentIdComprobante = operacion.PaymentId1 ?? operacion.PaymentId2;
+
+                if (paymentIdComprobante == null)
+                {
+                    Log.Warn(
+                        $"[0] - Timeout de pago mixto inconsistente sin paymentId para comprobante. MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, " +
+                        $"ExternalReference={operacion.ExternalReference}, OperadorId={operacion.OperadorId}");
+                }
+
+                Maquina maquinaResuelta = null;
+                if (operador != null && !string.IsNullOrWhiteSpace(operacion.ExternalReference))
+                {
+                    maquinaResuelta = await bugsDbContext.Maquinas.FirstOrDefaultAsync(x =>
+                        x.NotasService != null &&
+                        x.NotasService == operacion.ExternalReference &&
+                        x.OperadorID == operador.OperadorID);
+                }
+
+                bool usaFallbackMaquinaNula = maquinaResuelta == null;
+
+                Log.Info(
+                    $"[0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, " +
+                    $"ExternalReference={operacion.ExternalReference}, MontoAcumulado={operacion.MontoAcumulado}, ApprovedCount={operacion.ApprovedCount}, " +
+                    $"PaymentId1={operacion.PaymentId1}, PaymentId2={operacion.PaymentId2}, PaymentIdComprobante={paymentIdComprobante}, " +
+                    $"MaquinaIdResuelta={(maquinaResuelta != null ? maquinaResuelta.MaquinaID.ToString() : "null")}, UsaFallbackMaquinaNula={usaFallbackMaquinaNula}");
+
+                if (usaFallbackMaquinaNula)
+                {
+                    Log.Warn($"[0] - No se pudo resolver máquina para ExternalReference={operacion.ExternalReference} y OperadorId={operacion.OperadorId}. Se utilizará fallback de máquina nula.");
+                }
+
                 await GuardarNoProcesable(
                     bugsDbContext,
                     0,
@@ -696,7 +727,8 @@ namespace BugsMVC.Controllers
                     operador,
                     operacion.MontoAcumulado,
                     null,
-                    operacion.ExternalReference);
+                    paymentIdComprobante?.ToString(),
+                    maquinaResuelta);
             }
 
             operacion.Cerrada = true;
@@ -750,18 +782,18 @@ namespace BugsMVC.Controllers
         /// <param name="operador">Operador asociado al pago (puede ser nulo).</param>
         /// <param name="monto">Monto del pago (opcional).</param>
         /// <returns>True si el registro fue guardado correctamente, false en caso de error.</returns>
-        private async Task<Boolean> GuardarNoProcesable(BugsContext bugsDbContext, long idComprobante, string descripcion, Operador operador, decimal monto = 0, string detalleUrlDevolucion = null, string comprobanteOverride = null)
+        private async Task<Boolean> GuardarNoProcesable(BugsContext bugsDbContext, long idComprobante, string descripcion, Operador operador, decimal monto = 0, string detalleUrlDevolucion = null, string comprobanteOverride = null, Maquina maquinaOverride = null)
         {
             Log.Info($"[{idComprobante}] - Registrando caso no procesable. Operador: {(operador != null ? operador.OperadorID.ToString() : "null")} - Monto: {monto}");
 
             Boolean result = true;
 
-            Maquina maquina = null;
-            if (operador != null)
+            Maquina maquina = maquinaOverride;
+            if (maquina == null && operador != null)
             {
                 maquina = await bugsDbContext.Maquinas.FirstOrDefaultAsync(x => x.NotasService == MAQUINA_NULA && x.Operador.OperadorID == operador.OperadorID);
             }
-            else
+            else if (operador == null)
             {
                 Log.Error($"[{idComprobante}] - No se proporcionó un operador correcto para registrar el caso no procesable.");
             }
