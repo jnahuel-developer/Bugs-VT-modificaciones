@@ -95,3 +95,18 @@ mod0005
 		- (ninguno)
 	Archivos eliminados:
 		- (ninguno)
+
+mod0006
+    Rama: mod0006
+    Módulo principal: Simuladores
+    Estado: Fusionada en develop
+    Descripción:
+        - Se agregaron los endpoints POST /__admin/scenarios/mixed_rejected y POST /__admin/scenarios/mixed_cancelled para generar pagos mixtos donde la parte 2 queda fija en estado rejected o cancelled, sin afectar los escenarios existentes.
+        - Se extendió el escenario mixto para soportar un estado final configurable en el pago 2, manteniendo el flujo actual del pago 1 (authorized → approved) cuando corresponde.
+        - Se ajustó status_detail para reflejar correctamente approved/authorized/rejected/cancelled, con fallback compatible.
+    Archivos modificados:
+        - 05. Simuladores/mp_simulator.py
+    Archivos nuevos:
+        - (ninguno)
+    Archivos eliminados:
+        - (ninguno)
