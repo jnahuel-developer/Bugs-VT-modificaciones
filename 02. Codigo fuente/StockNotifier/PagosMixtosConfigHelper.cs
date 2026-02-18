@@ -25,11 +25,13 @@ namespace StockNotifier
 
             if (string.Equals(modo, "ON", StringComparison.OrdinalIgnoreCase))
             {
+                Log.Info("Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: ON.");
                 return true;
             }
 
             if (string.Equals(modo, "OFF", StringComparison.OrdinalIgnoreCase))
             {
+                Log.Info("Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: OFF.");
                 return false;
             }
 

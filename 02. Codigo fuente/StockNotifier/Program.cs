@@ -36,6 +36,7 @@ namespace StockNotifier
             {
                 db = new BugsContext();
                 AmbienteConfigHelper.Inicializar();
+                _ = PagosMixtosConfigHelper.PagosMixtosHabilitados;
 
                 var stocks = db.Stocks.ToList();
                 var maquinas = db.Maquinas.ToList();
