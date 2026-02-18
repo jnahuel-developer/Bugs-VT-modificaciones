@@ -29,7 +29,7 @@ mod0002
 mod0003
     Rama: mod0003
     Módulo principal: Ambos
-    Estado: En desarrollo
+    Estado: Fusionada en main
     Descripción:
         - Se implementó el toggle PagosMixtos:Modo (OFF/ON) con lectura cacheada y default seguro OFF.
         - Se aplicó gating en BugsMVC para deshabilitar el flujo mixto cuando el modo se encuentra en OFF.
@@ -54,7 +54,7 @@ mod0003
 mod0004
     Rama: mod0004
     Módulo principal: Ambos
-    Estado: En desarrollo
+    Estado: Fusionada en main
     Descripción:
         - Se agregaron las keys Ambiente:Desarrollo y Ambiente:Simuladores con lectura cacheada, validación ON/OFF y logging mínimo del valor efectivo.
         - Se estableció connection.config como configSource por defecto en Web.config.
@@ -75,3 +75,23 @@ mod0004
         - 02. Codigo fuente/StockNotifier/AmbienteConfigHelper.cs
     Archivos eliminados:
         - (ninguno)
+
+mod0005
+	Rama: mod0005
+	Módulo principal: BugsMVC
+	Estado: Fusionada en develop
+	Descripción:
+		- Se robusteció el cierre por timeout de operaciones de pagos mixtos para evitar registros incorrectos en MercadoPagoTable.
+		- Si la operación mixta expira sin impacto financiero (MontoAcumulado == 0 o sin PaymentId1/PaymentId2) se cierra la operación en MercadoPagoOperacionMixta y se registra únicamente un log informativo (sin insertar NO_PROCESABLE).
+		- Si la operación mixta expira con al menos 1 pago aprobado (monto acumulado > 0 y existe PaymentId1/PaymentId2), se registra NO_PROCESABLE en MercadoPagoTable con:
+			- Comprobante = PaymentId real parcial (PaymentId1 ?? PaymentId2).
+			- Descripcion = "Pago mixto inconsistente".
+			- UrlDevolucion = NULL.
+			- MaquinaId resuelta por ExternalReference + OperadorId (fallback a máquina nula si no se puede resolver).
+		- Se agregaron logs de trazabilidad para cierres silenciosos y para inserciones NO_PROCESABLE, incluyendo snapshot de la operación mixta (ids, montos, approvedCount y paymentIds).
+	Archivos modificados:
+		- 02. Codigo fuente/BugsMVC/BugsMVC/Controllers/PagosMPController.cs
+	Archivos nuevos:
+		- (ninguno)
+	Archivos eliminados:
+		- (ninguno)
