@@ -157,13 +157,10 @@ namespace StockNotifier
 
                     if (mercadoPago.Comprobante != "" && mercadoPago.Entidad == "MP" && operador.AccessToken != null)
                     {
-                        // Se habilita el flujo de atención de pagos mixtos solo si está habilitado en el proyecto
                         if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
                         {
-                            ProcesarCandidatoDevolucionPagosMixtosPlaceholder(mercadoPago, operador, maquina);
-
-                            // Importante: por ahora NO se corta el flujo. Se continúa como hasta ahora.
-                            // (No usar continue; no devolver; no cambiar estado)
+                            await ProcesarCandidatoDevolucionPagosMixtosAsync(db, mercadoPago, operador, maquina);
+                            continue;
                         }
 
                         await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
@@ -486,13 +483,59 @@ namespace StockNotifier
             }
         }
 
-        private static void ProcesarCandidatoDevolucionPagosMixtosPlaceholder(MercadoPagoTable mercadoPago, Operador operador, Maquina maquina)
+        private static async Task ProcesarCandidatoDevolucionPagosMixtosAsync(BugsContext db, MercadoPagoTable mercadoPago, Operador operador, Maquina maquina)
         {
-            string operadorId = operador != null ? operador.OperadorID.ToString() : "null";
-            string mercadoPagoId = mercadoPago != null ? mercadoPago.MercadoPagoId.ToString() : "null";
-            string comprobante = mercadoPago != null ? mercadoPago.Comprobante : "null";
+            Log.Info($"Pagos mixtos habilitados: iniciando análisis de devolución para comprobante {mercadoPago.Comprobante}.");
 
-            Log.Info($"Pagos mixtos habilitados: se detectó candidato de devolución. OperadorId={operadorId}, MercadoPagoId={mercadoPagoId}, Comprobante={comprobante}.");
+            long paymentIdActual = 0;
+            if (!long.TryParse(mercadoPago.Comprobante, out paymentIdActual))
+            {
+                Log.Info($"No se pudo interpretar el comprobante '{mercadoPago.Comprobante}' como identificador numérico; no se ejecuta devolución en flujo mixto.");
+                return;
+            }
+
+            var operacionMixta = db.MercadoPagoOperacionMixta.FirstOrDefault(x =>
+                x.OperadorId == operador.OperadorID &&
+                (x.PaymentId1 == paymentIdActual || x.PaymentId2 == paymentIdActual));
+
+            if (operacionMixta == null)
+            {
+                Log.Info($"Pago no asociado a operación mixta: se procesa devolución estándar para comprobante {paymentIdActual}.");
+                await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
+                return;
+            }
+
+            long? otroPaymentId = null;
+
+            if (operacionMixta.PaymentId1 == paymentIdActual)
+            {
+                otroPaymentId = operacionMixta.PaymentId2;
+            }
+            else if (operacionMixta.PaymentId2 == paymentIdActual)
+            {
+                otroPaymentId = operacionMixta.PaymentId1;
+            }
+
+            if (otroPaymentId.HasValue && otroPaymentId.Value > 0)
+            {
+                Log.Info($"Pago asociado a operación mixta (MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}): se devolverán comprobantes {paymentIdActual} y {otroPaymentId.Value}.");
+                await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
+                await EjecutarRefundMercadoPagoAsync(operador, otroPaymentId.Value);
+            }
+            else
+            {
+                Log.Info($"Pago asociado a operación mixta (MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}): no se detectó segundo comprobante válido; se devuelve solo {paymentIdActual}.");
+                await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
+            }
+        }
+
+        private static async Task<bool> EjecutarRefundMercadoPagoAsync(Operador operador, long idPayment)
+        {
+            MercadoPagoConfig.AccessToken = null;
+            MercadoPagoConfig.AccessToken = operador.AccessToken;
+
+            PaymentClient paymentClient = new PaymentClient();
+            return await ProcesarReembolsoAsync(paymentClient, idPayment);
         }
 
     }
