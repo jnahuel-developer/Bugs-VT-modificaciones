@@ -193,3 +193,20 @@ mod0011
 		- (ninguno)
 	Archivos eliminados:
 		- (ninguno)
+
+mod0012
+	Rama: mod0012
+	Módulo principal: StockNotifier
+	Estado: Fusionada en develop
+	Descripción:
+		- Se agregó un nuevo bloque “Control Devoluciones NO PROCESABLES” inmediatamente después del bloque existente “Control Devoluciones”, ejecutándose únicamente cuando está habilitada la key PagosMixtos:Modo.
+		- El bloque identifica operaciones NO PROCESABLES en la tabla de operaciones de MP filtrando por MercadoPagoEstadoFinancieroId = 4 y MercadoPagoEstadoTransmisionId = 5.
+		- Se validó devolvibilidad por operación (máquina y operador existentes, Comprobante no vacío y numérico, Entidad = "MP", y AccessToken presente).
+		- Para cada candidato, se resolvieron los IDs a devolver consultando la tabla de pagos mixtos (MercadoPagoOperacionMixta: PaymentId1/PaymentId2), incorporando sólo el par distinto de null/0 cuando corresponda y evitando duplicados.
+		- Se ejecutó la devolución reutilizando la lógica existente (EjecutarRefundMercadoPagoAsync) con trazabilidad por MercadoPagoId y por comprobante, y se actualizaron los estados del registro según el patrón vigente cuando la devolución queda confirmada.
+	Archivos modificados:
+		- 02. Codigo fuente\StockNotifier\Program.cs
+	Archivos nuevos:
+		- (ninguno)
+	Archivos eliminados:
+		- (ninguno)
