@@ -125,3 +125,18 @@ mod0007
         - (ninguno)
     Archivos eliminados:
         - (ninguno)
+
+mod0008
+	Rama: mod0008
+	Módulo principal: StockNotifier
+	Estado: Fusionada en develop
+	Descripción:
+		- Se integró el feature-flag de pagos mixtos (PagosMixtos:Modo) usando los helpers existentes, con logueo de configuración al inicio del proceso.
+		- Se aisló el flujo original de devolución de Mercado Pago en un método reutilizable, preservando el comportamiento para pagos simples cuando pagos mixtos está deshabilitado.
+		- Con pagos mixtos habilitados, se agregó la correlación contra MercadoPagoOperacionMixta para detectar si el comprobante corresponde a una operación mixta y, en ese caso, ejecutar la devolución de ambos comprobantes (PaymentId1 y PaymentId2) cuando corresponda.
+	Archivos modificados:
+		- 02. Codigo fuente\StockNotifier\Program.cs
+	Archivos nuevos:
+		- (ninguno)
+	Archivos eliminados:
+		- (ninguno)
