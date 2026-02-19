@@ -35,8 +35,6 @@ namespace StockNotifier
             try
             {
                 db = new BugsContext();
-                AmbienteConfigHelper.Inicializar();
-                _ = PagosMixtosConfigHelper.PagosMixtosHabilitados;
 
                 var stocks = db.Stocks.ToList();
                 var maquinas = db.Maquinas.ToList();
@@ -126,8 +124,6 @@ namespace StockNotifier
 
                 }
 
-                bool pagosMixtosHabilitados = PagosMixtosConfigHelper.PagosMixtosHabilitados;
-
                 Log.Info("Control Devoluciones");
 
                 var mercadoPagosFiltrados = mercadoPagos
@@ -168,90 +164,55 @@ namespace StockNotifier
 
                         try
                         {
-                            var paymentIdsADevolver = new List<long>();
+                            Log.Info($"Intentando obtener información de payment...");
+                            payment = await paymentClient.GetAsync(idPayment);
 
-                            if (pagosMixtosHabilitados)
+                            if (payment != null)
                             {
-                                var operacionMixta = BuscarOperacionMixtaPorPaymentId(db, idPayment);
+                                Log.Info("Comprobante encontrado");
 
-                                if (operacionMixta != null)
+                                if (payment.Status != PaymentStatus.Refunded)
                                 {
-                                    if (operacionMixta.PaymentId1.HasValue)
+                                    //Procesar reembolso
+                                    bool isReembolsadoCorrectamente = await ProcesarReembolsoAsync(paymentClient, idPayment);
+
+                                    if (isReembolsadoCorrectamente)
                                     {
-                                        paymentIdsADevolver.Add(operacionMixta.PaymentId1.Value);
-                                    }
-
-                                    if (operacionMixta.PaymentId2.HasValue && operacionMixta.PaymentId2.Value != operacionMixta.PaymentId1)
-                                    {
-                                        paymentIdsADevolver.Add(operacionMixta.PaymentId2.Value);
-                                    }
-
-                                    Log.Info($"Pago mixto detectado para Comprobante={mercadoPago.Comprobante}. PaymentIds a devolver: {string.Join(",", paymentIdsADevolver)}");
-                                }
-                                else
-                                {
-                                    paymentIdsADevolver.Add(idPayment);
-                                }
-                            }
-                            else
-                            {
-                                paymentIdsADevolver.Add(idPayment);
-                            }
-
-                            foreach (var paymentIdActual in paymentIdsADevolver.Distinct())
-                            {
-                                Log.Info($"Intentando obtener información de payment para PaymentId={paymentIdActual}...");
-                                payment = await paymentClient.GetAsync(paymentIdActual);
-
-                                if (payment != null)
-                                {
-                                    Log.Info("Comprobante encontrado");
-
-                                    if (payment.Status != PaymentStatus.Refunded)
-                                    {
-                                        //Procesar reembolso
-                                        bool isReembolsadoCorrectamente = await ProcesarReembolsoAsync(paymentClient, paymentIdActual);
-
-                                        if (isReembolsadoCorrectamente)
-                                        {
-                                            Log.Info($"Refund OK para PaymentId={paymentIdActual}");
-                                            Log.Info("Actualizando registro en MercadoPagoTable");
-                                            //mercadoPago.Descripcion = "Envio ok.";
-                                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
-                                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
-                                        }
-                                        else
-                                        {
-                                            string errorMessage = "No se logró realizar la devolución tras 3 intentos. Status Payment: " + payment.Status;
-                                            Log.Info($"Refund fallido para PaymentId={paymentIdActual}");
-                                            Log.Info(errorMessage);
-                                            payment = await paymentClient.GetAsync(paymentIdActual);
-                                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
-                                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.AVISO_FALLIDO;
-                                            mercadoPago.Descripcion = errorMessage;
-                                        }
-
-                                        db.Entry(mercadoPago).State = EntityState.Modified;
-                                        db.SaveChanges();
-                                    }
-                                    else
-                                    {
-                                        Log.Info($"El pago ya ha sido reembolsado anteriormente, no se realizará otra devolución. PaymentId={paymentIdActual}");
-                                        Log.Info("Corrigiendo registro en MercadoPagoTable...");
+                                        Log.Info("Actualizando registro en MercadoPagoTable");
                                         //mercadoPago.Descripcion = "Envio ok.";
                                         mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
                                         mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
-
-                                        db.Entry(mercadoPago).State = EntityState.Modified;
-                                        db.SaveChanges();
+                                    }
+                                    else
+                                    {
+                                        string errorMessage = "No se logró realizar la devolución tras 3 intentos. Status Payment: " + payment.Status;
+                                        Log.Info(errorMessage);
+                                        payment = await paymentClient.GetAsync(idPayment);
+                                        mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                                        mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.AVISO_FALLIDO;
+                                        mercadoPago.Descripcion = errorMessage;
                                     }
 
+                                    db.Entry(mercadoPago).State = EntityState.Modified;
+                                    db.SaveChanges();
                                 }
                                 else
                                 {
-                                    //No se encontró el pago,  no deberia suceder.
-                                    Log.Info($"No se encontro el pago para PaymentId={paymentIdActual}");
+                                    Log.Info("El pago ya ha sido reembolsado anteriormente, no se realizará otra devolución.");
+                                    Log.Info("Corrigiendo registro en MercadoPagoTable...");
+                                    //mercadoPago.Descripcion = "Envio ok.";
+                                    mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                                    mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+
+                                    db.Entry(mercadoPago).State = EntityState.Modified;
+                                    db.SaveChanges();
                                 }
+
+                            }
+                            else
+                            {
+                                //No se encontró el pago,  no deberia suceder.
+                                Log.Info("No se encontro el pago");
                             }
                         }
                         catch (MercadoPagoApiException ex)
@@ -289,118 +250,6 @@ namespace StockNotifier
 
                 }
 
-                if (pagosMixtosHabilitados)
-                {
-                    Log.Info("Control Devoluciones Mixtas Parciales");
-
-                    int umbralMixtoMinutos = ObtenerUmbralMixtoParcialMinutos();
-                    DateTime limiteMixto = DateTime.UtcNow.AddMinutes(-umbralMixtoMinutos);
-
-                    var operacionesMixtasParciales = db.MercadoPagoOperacionMixta
-                        .Where(x => !x.Cerrada
-                            && x.PaymentId1 != null
-                            && x.ApprovedCount >= 1
-                            && x.FechaUltimaActualizacionUtc <= limiteMixto)
-                        .ToList();
-
-                    foreach (var operacionMixta in operacionesMixtasParciales)
-                    {
-                    Log.Info($"Operacion mixta parcial detectada. OperadorId={operacionMixta.OperadorId} ExternalReference={operacionMixta.ExternalReference} ApprovedCount={operacionMixta.ApprovedCount} PaymentId1={operacionMixta.PaymentId1} PaymentId2={operacionMixta.PaymentId2} FechaUltimaActualizacionUtc={operacionMixta.FechaUltimaActualizacionUtc}");
-
-                    var paymentIds = new List<long>();
-                    if (operacionMixta.PaymentId1.HasValue)
-                    {
-                        paymentIds.Add(operacionMixta.PaymentId1.Value);
-                    }
-
-                    if (operacionMixta.PaymentId2.HasValue && operacionMixta.PaymentId2.Value != operacionMixta.PaymentId1)
-                    {
-                        paymentIds.Add(operacionMixta.PaymentId2.Value);
-                    }
-
-                    var paymentIdsPendientes = paymentIds
-                        .Distinct()
-                        .Where(id => !db.MercadoPagoTable.Any(mp => mp.Comprobante == id.ToString()))
-                        .ToList();
-
-                    if (!paymentIdsPendientes.Any())
-                    {
-                        Log.Info($"Operacion mixta parcial sin payments pendientes de devolución. OperadorId={operacionMixta.OperadorId} ExternalReference={operacionMixta.ExternalReference}");
-                    }
-                    else
-                    {
-                        Operador operadorMixto = db.Operadores.FirstOrDefault(x => x.OperadorID == operacionMixta.OperadorId);
-
-                        if (operadorMixto == null)
-                        {
-                            Log.Info($"No se encontro operador para operacion mixta parcial. OperadorId={operacionMixta.OperadorId}");
-                        }
-                        else if (string.IsNullOrWhiteSpace(operadorMixto.AccessToken))
-                        {
-                            Log.Info($"Operador sin AccessToken para operacion mixta parcial. OperadorId={operacionMixta.OperadorId}");
-                        }
-                        else
-                        {
-                            MercadoPagoConfig.AccessToken = null;
-                            MercadoPagoConfig.AccessToken = operadorMixto.AccessToken;
-
-                            PaymentClient paymentClient = new PaymentClient();
-
-                            foreach (var paymentId in paymentIdsPendientes)
-                            {
-                                try
-                                {
-                                    Log.Info($"Intentando obtener información de payment para PaymentId={paymentId} (mixto parcial)...");
-                                    Payment payment = await paymentClient.GetAsync(paymentId);
-
-                                    if (payment != null)
-                                    {
-                                        Log.Info("Comprobante encontrado");
-
-                                        if (payment.Status != PaymentStatus.Refunded)
-                                        {
-                                            bool isReembolsadoCorrectamente = await ProcesarReembolsoAsync(paymentClient, paymentId);
-
-                                            if (isReembolsadoCorrectamente)
-                                            {
-                                                Log.Info($"Refund OK para PaymentId={paymentId} (mixto parcial)");
-                                            }
-                                            else
-                                            {
-                                                Log.Info($"Refund fallido para PaymentId={paymentId} (mixto parcial)");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Log.Info($"El pago ya ha sido reembolsado anteriormente. PaymentId={paymentId} (mixto parcial)");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Log.Info($"No se encontro el pago para PaymentId={paymentId} (mixto parcial)");
-                                    }
-                                }
-                                catch (MercadoPagoApiException ex)
-                                {
-                                    Log.Error("Se produjo un error con la API de Mercado Pago.");
-                                    Log.Error($"Error: {ex.Message}");
-                                    Log.Error($"Status Code: {ex.StatusCode}");
-                                    Log.Error($"Error de API: {ex.ApiError}");
-                                    Log.Error($"Respuesta de API: {ex.ApiResponse}");
-                                }
-                            }
-                        }
-                    }
-
-                    operacionMixta.Cerrada = true;
-                    operacionMixta.FechaCierreUtc = DateTime.UtcNow;
-                    operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
-                    db.Entry(operacionMixta).State = EntityState.Modified;
-                    db.SaveChanges();
-                    Log.Info($"Operacion mixta parcial cerrada. OperadorId={operacionMixta.OperadorId} ExternalReference={operacionMixta.ExternalReference}");
-                }
-                }
-
                 ProcesarListaStock("SistemaVT - Alarma Stock Muy Bajo", mailsStockMuyBajo);
                 ProcesarListaStock("SistemaVT - Alarma Stock Bajo", mailsStockBajo);
 
@@ -415,25 +264,6 @@ namespace StockNotifier
                 Log.Error(ex.Message);
 
             }
-        }
-
-        private static MercadoPagoOperacionMixta BuscarOperacionMixtaPorPaymentId(BugsContext context, long paymentId)
-        {
-            return context.MercadoPagoOperacionMixta
-                .FirstOrDefault(x => x.PaymentId1 == paymentId || x.PaymentId2 == paymentId);
-        }
-
-        private static int ObtenerUmbralMixtoParcialMinutos()
-        {
-            int umbralMinutos = 15;
-            string valorConfig = ConfigurationManager.AppSettings["MixedPartialRefundMinutes"];
-
-            if (!string.IsNullOrWhiteSpace(valorConfig) && int.TryParse(valorConfig, out int umbralConfig))
-            {
-                umbralMinutos = umbralConfig;
-            }
-
-            return umbralMinutos;
         }
 
         /// <summary>

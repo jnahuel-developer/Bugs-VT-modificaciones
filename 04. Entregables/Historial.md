@@ -110,3 +110,18 @@ mod0006
         - (ninguno)
     Archivos eliminados:
         - (ninguno)
+
+mod0007
+    Rama: mod0007
+    Módulo principal: BugsMVC
+    Estado: Fusionada en develop
+    Descripción:
+        - Se incorporó el cierre de pagos mixtos cuando un pago parcial finaliza en estado Rejected/Cancelled, registrándolo como no procesable cuando corresponde y evitando el envío a máquina.
+        - Se ajustó la validación de envío a máquina para exigir dos pagos parciales registrados con identificadores válidos (distintos de 0) y monto acumulado > 0.
+        - Se agregaron logs más descriptivos y helpers para resolución de máquina por ExternalReference y selección de comprobante válido en cierres mixtos (rechazo/cancelación y timeout).
+    Archivos modificados:
+        - 02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs
+    Archivos nuevos:
+        - (ninguno)
+    Archivos eliminados:
+        - (ninguno)
