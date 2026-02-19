@@ -195,6 +195,106 @@ namespace StockNotifier
 
                 }
 
+
+
+                if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
+                {
+                    Log.Info("Control Devoluciones NO PROCESABLES");
+
+                    var mercadoPagosNoProcesables = mercadoPagos
+                        .Where(x => x.MercadoPagoEstadoFinancieroId == (int)MercadoPagoEstadoFinanciero.States.NO_PROCESABLE)
+                        .Where(x => x.MercadoPagoEstadoTransmisionId == (int)MercadoPagoEstadoTransmision.States.NO_PROCESABLE)
+                        .AsEnumerable()
+                        .Where(x =>
+                                (
+                                    x.MercadoPagoEstadoTransmisionId != (int)MercadoPagoEstadoTransmision.States.EN_PROCESO
+                                    ||
+                                    (DateTime.Now - x.Fecha).TotalMinutes > tiempoMP
+                                )
+                        ).ToList();
+
+
+                    foreach (var mercadoPago in mercadoPagosNoProcesables)
+                    {
+                        Log.Info("Maquina:" + mercadoPago.MaquinaId);
+
+                        //Devolver dinero
+                        Maquina maquina = db.Maquinas.Where(x => x.MaquinaID == mercadoPago.MaquinaId).FirstOrDefault();
+                        Operador operador = db.Operadores.Where(x => x.OperadorID == maquina.OperadorID).FirstOrDefault();
+
+                        if (mercadoPago.Comprobante != "" && mercadoPago.Entidad == "MP" && operador.AccessToken != null)
+                        {
+                            if (!long.TryParse(mercadoPago.Comprobante, out long idPrincipal))
+                            {
+                                Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: comprobante no numérico ({mercadoPago.Comprobante}).");
+                                continue;
+                            }
+
+                            HashSet<long> idsADevolver = new HashSet<long>();
+                            idsADevolver.Add(idPrincipal);
+
+                            var operacionMixta = db.MercadoPagoOperacionMixta.FirstOrDefault(x =>
+                                x.PaymentId1 == idPrincipal || x.PaymentId2 == idPrincipal);
+
+                            if (operacionMixta != null)
+                            {
+                                long? idExtra = operacionMixta.PaymentId1 == idPrincipal
+                                    ? operacionMixta.PaymentId2
+                                    : operacionMixta.PaymentId1;
+
+                                if (idExtra.HasValue && idExtra.Value > 0)
+                                {
+                                    idsADevolver.Add(idExtra.Value);
+                                }
+                                else
+                                {
+                                    Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: operación mixta detectada (MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}) sin par válido para devolución.");
+                                }
+                            }
+
+                            Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: IDs a devolver => {string.Join(", ", idsADevolver)}.");
+
+                            bool devolucionCompletaConfirmada = true;
+
+                            foreach (long idDevolucion in idsADevolver)
+                            {
+                                try
+                                {
+                                    bool confirmado = await EjecutarRefundMercadoPagoAsync(operador, idDevolucion);
+                                    Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: resultado devolución comprobante {idDevolucion} => {(confirmado ? "confirmado" : "no confirmado")}.");
+
+                                    if (!confirmado)
+                                    {
+                                        devolucionCompletaConfirmada = false;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    devolucionCompletaConfirmada = false;
+                                    Log.Error($"MercadoPagoId={mercadoPago.MercadoPagoId}: error al devolver comprobante {idDevolucion}. Detalle: {ex.Message}");
+                                }
+                            }
+
+                            if (devolucionCompletaConfirmada)
+                            {
+                                mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                                mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+                                db.Entry(mercadoPago).State = EntityState.Modified;
+                                db.SaveChanges();
+
+                                Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.");
+                            }
+                            else
+                            {
+                                Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: devolución no confirmada para uno o más IDs, no se actualiza estado.");
+                            }
+                        }
+
+                    }
+
+                }
+
+
                 ProcesarListaStock("SistemaVT - Alarma Stock Muy Bajo", mailsStockMuyBajo);
                 ProcesarListaStock("SistemaVT - Alarma Stock Bajo", mailsStockBajo);
 
@@ -340,8 +440,6 @@ namespace StockNotifier
 
             if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
             {
-                Log.Info("Devolviendo al Operador: " + operador.OperadorID);
-                Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
                 Log.Info($"Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante {idPayment}.");
 
                 try
@@ -349,15 +447,9 @@ namespace StockNotifier
                     using (HttpClient httpClient = CreateMpSimulatorHttpClient())
                     {
                         var estadoInicial = await SimGetPaymentStatusAsync(httpClient, idPayment);
-                        if (!estadoInicial.found)
-                        {
-                            Log.Info($"mp_simulator: payment {idPayment} no existe al consultar estado; se intentará refund igualmente.");
-                        }
 
                         if (string.Equals(estadoInicial.status, "refunded", StringComparison.OrdinalIgnoreCase))
                         {
-                            Log.Info("El pago ya ha sido reembolsado anteriormente, no se realizará otra devolución.");
-                            Log.Info("Corrigiendo registro en MercadoPagoTable...");
                             mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
                             mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
 
@@ -370,7 +462,6 @@ namespace StockNotifier
 
                         if (isReembolsadoCorrectamente)
                         {
-                            Log.Info("Actualizando registro en MercadoPagoTable");
                             mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
                             mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
                         }
@@ -391,7 +482,6 @@ namespace StockNotifier
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Se produjo un error al procesar la devolución contra mp_simulator.");
                     Log.Error($"Error: {ex.Message}");
                 }
 
@@ -567,7 +657,6 @@ namespace StockNotifier
 
             if (operacionMixta == null)
             {
-                Log.Info($"Pago no asociado a operación mixta: se procesa devolución estándar para comprobante {paymentIdActual}.");
                 await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
                 return;
             }
@@ -595,6 +684,7 @@ namespace StockNotifier
                 await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
             }
         }
+
 
         private static async Task<bool> EjecutarRefundMercadoPagoAsync(Operador operador, long idPayment)
         {
@@ -632,13 +722,11 @@ namespace StockNotifier
 
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                    Log.Info($"mp_simulator: GET payment no encontrado. url={absoluteUrl}, status={(int)response.StatusCode}");
                     return (false, null);
                 }
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Log.Info($"mp_simulator: GET payment respuesta inesperada. url={absoluteUrl}, status={(int)response.StatusCode}");
                     return (false, null);
                 }
 
@@ -647,7 +735,6 @@ namespace StockNotifier
             }
             catch (Exception ex)
             {
-                Log.Error($"mp_simulator: excepción al consultar payment {idPayment}: {ex.Message} | inner: {ex.InnerException?.Message}");
                 return (false, null);
             }
         }
@@ -659,18 +746,14 @@ namespace StockNotifier
 
             try
             {
-                Log.Info($"mp_simulator: POST refund => {absoluteUrl}");
-
                 using (var content = new StringContent("{}", Encoding.UTF8, "application/json"))
                 {
                     HttpResponseMessage response = await http.PostAsync(relativeUrl, content);
-                    Log.Info($"mp_simulator: POST refund status={(int)response.StatusCode}");
 
                     string responseBody = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrWhiteSpace(responseBody))
                     {
                         string bodyTruncado = responseBody.Length > 500 ? responseBody.Substring(0, 500) : responseBody;
-                        Log.Info($"mp_simulator: POST refund response={bodyTruncado}");
                     }
 
                     return response.IsSuccessStatusCode;
@@ -678,7 +761,6 @@ namespace StockNotifier
             }
             catch (Exception ex)
             {
-                Log.Error($"mp_simulator: excepción al solicitar refund {idPayment}: {ex.Message} | inner: {ex.InnerException?.Message}");
                 return false;
             }
         }
@@ -687,37 +769,27 @@ namespace StockNotifier
         {
             if (reintentos == 0)
             {
-                Log.Info($"Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante {idPayment}.");
                 await SimPostRefundAsync(http, idPayment);
             }
 
             if (reintentos > 0)
             {
-                // mod0011: en modo simulador reducimos el tiempo entre reintentos a 3s para pruebas locales.
-                // Revertir a 60s antes de habilitar ejecución contra Mercado Pago real / producción.
-                await Task.Delay(TimeSpan.FromSeconds(3));
-                Log.Info($"Reintentando reembolso para el pago con ID: {idPayment}, reintento número: {reintentos}");
+                await Task.Delay(TimeSpan.FromSeconds(60));
             }
 
             var estado = await SimGetPaymentStatusAsync(http, idPayment);
             string statusActual = estado.status;
 
-            Log.Info("Revisando status del pago...");
-            Log.Info("Payment Status: " + statusActual);
-
             if (string.Equals(statusActual, "refunded", StringComparison.OrdinalIgnoreCase))
             {
-                Log.Info($"mp_simulator: refund confirmado para comprobante {idPayment}.");
                 return true;
             }
 
             if (reintentos >= 3)
             {
-                Log.Info($"mp_simulator: no se confirmó refund para comprobante {idPayment} tras {reintentos + 1} intentos.");
                 return false;
             }
 
-            Log.Info("Esperando 3 segundos para obtener estado del pago...");
             return await ProcesarReembolsoSimuladorAsync(http, idPayment, reintentos + 1);
         }
 
