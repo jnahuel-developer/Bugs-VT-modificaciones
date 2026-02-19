@@ -140,3 +140,37 @@ mod0008
 		- (ninguno)
 	Archivos eliminados:
 		- (ninguno)
+
+mod0009
+	Rama: mod0009
+	Módulo principal: StockNotifier
+	Estado: Fusionada en develop
+	Descripción:
+		- Se incorporó la atención de pagos mixtos dentro del flujo de devoluciones, validando si el comprobante a devolver está asociado a una operación en MercadoPagoOperacionMixta.
+		- Cuando el comprobante no está asociado a una operación mixta, se procesa como devolución estándar (pago simple).
+		- Cuando el comprobante sí está asociado a una operación mixta y existe un segundo PaymentId válido, se ejecuta la devolución de ambos comprobantes (PaymentId1 y PaymentId2) dentro de la misma iteración.
+		- Se mantuvo el flujo original de devoluciones para pagos simples sin cambios funcionales cuando no aplica mixto.
+		- Se agregaron logs en español (tono formal) para distinguir claramente los casos “pago simple” vs “pago mixto” y los comprobantes involucrados.
+	Archivos modificados:
+		- 02. Codigo fuente\StockNotifier\Program.cs
+	Archivos nuevos:
+		- (ninguno)
+	Archivos eliminados:
+		- (ninguno)
+
+mod0010
+	Rama: mod0010
+	Módulo principal: mp_simulator
+	Estado: Fusionada en develop
+	Descripción:
+		- Se incorporó soporte de refunds (devoluciones) para payments mediante los endpoints POST /v1/payments/{id}/refunds y POST /payments/{id}/refunds (alias), manteniendo los endpoints GET existentes para consulta de payments.
+		- Se agregó estado en memoria para refunds por payment (requested_at/apply_at/modo/delay/aplicado) y un next_refund_mode global one-shot que se consume en el primer refund y vuelve a ok.
+		- Se implementó creación automática del payment al solicitar refund si no existe (status inicial approved), para permitir IDs ficticios en pruebas locales.
+		- Se agregaron endpoints admin para controlar el comportamiento del “próximo refund”: ok, delay_ok, delay_timeout y no_response, más endpoints de consulta/reset del modo.
+		- Se eliminaron archivos de análisis innecesarios creados previamente para esta mod.
+	Archivos modificados:
+		- 05. Simuladores\mp_simulator.py
+	Archivos nuevos:
+		- (ninguno)
+	Archivos eliminados:
+		- (ninguno)

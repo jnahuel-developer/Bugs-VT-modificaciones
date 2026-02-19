@@ -36,6 +36,17 @@ from urllib.parse import urlparse, parse_qs
 
 _LOCK = threading.Lock()
 
+DEFAULT_REFUND_DELAY_OK_SECONDS = 45
+DEFAULT_REFUND_DELAY_TIMEOUT_SECONDS = 600
+
+
+def build_next_refund_mode(mode: str = "ok", delay_seconds: int = 0) -> Dict[str, Any]:
+    return {
+        "mode": mode,
+        "delay_seconds": max(0, int(delay_seconds)),
+        "set_at": utc_now_iso(),
+    }
+
 
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -97,6 +108,8 @@ class PaymentStore:
     def __init__(self, persist_path: Optional[str] = None) -> None:
         self.persist_path = persist_path
         self.payments: Dict[int, PaymentRecord] = {}
+        self.refund_state: Dict[int, Dict[str, Any]] = {}
+        self.next_refund_mode: Dict[str, Any] = build_next_refund_mode("ok", 0)
 
     def load(self) -> None:
         if not self.persist_path:
@@ -109,18 +122,26 @@ class PaymentStore:
                 rec = PaymentRecord(**v)
                 p[int(k)] = rec
             self.payments = p
+            self.refund_state = {int(k): v for k, v in raw.get("refund_state", {}).items()}
+            self.next_refund_mode = raw.get("next_refund_mode", build_next_refund_mode("ok", 0))
         except FileNotFoundError:
             return
 
     def save(self) -> None:
         if not self.persist_path:
             return
-        data = {"payments": {str(pid): asdict(rec) for pid, rec in self.payments.items()}}
+        data = {
+            "payments": {str(pid): asdict(rec) for pid, rec in self.payments.items()},
+            "refund_state": {str(pid): state for pid, state in self.refund_state.items()},
+            "next_refund_mode": self.next_refund_mode,
+        }
         with open(self.persist_path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def reset(self) -> None:
         self.payments = {}
+        self.refund_state = {}
+        self.next_refund_mode = build_next_refund_mode("ok", 0)
         self.save()
 
     def upsert(self, rec: PaymentRecord) -> None:
@@ -132,6 +153,79 @@ class PaymentStore:
 
     def get(self, pid: int) -> Optional[PaymentRecord]:
         return self.payments.get(pid)
+
+    def ensure_payment(self, pid: int) -> PaymentRecord:
+        rec = self.get(pid)
+        if rec is None:
+            rec = PaymentRecord(
+                id=pid,
+                status="approved",
+                transaction_amount=0.0,
+                external_reference=f"SIM_{pid}",
+            )
+            self.upsert(rec)
+        return rec
+
+    def get_next_refund_mode(self) -> Dict[str, Any]:
+        return dict(self.next_refund_mode)
+
+    def set_next_refund_mode(self, mode: str, delay_seconds: int = 0) -> Dict[str, Any]:
+        self.next_refund_mode = build_next_refund_mode(mode, delay_seconds)
+        self.save()
+        return self.get_next_refund_mode()
+
+    def consume_next_refund_mode(self) -> Dict[str, Any]:
+        mode = self.get_next_refund_mode()
+        self.next_refund_mode = build_next_refund_mode("ok", 0)
+        self.save()
+        return mode
+
+    def schedule_refund(self, pid: int, mode_used: str, delay_seconds: int = 0) -> Dict[str, Any]:
+        now_epoch = time.time()
+        apply_at: Optional[float] = None
+        if delay_seconds > 0:
+            apply_at = now_epoch + delay_seconds
+
+        state = {
+            "requested_at": now_epoch,
+            "apply_at": apply_at,
+            "mode_used": mode_used,
+            "delay_seconds": int(delay_seconds),
+            "applied": False,
+        }
+        self.refund_state[pid] = state
+
+        if delay_seconds <= 0:
+            rec = self.ensure_payment(pid)
+            rec.status = "refunded"
+            rec.status_sequence = ["refunded"]
+            rec.sequence_index = 0
+            state["applied"] = True
+            state["applied_at"] = now_epoch
+            self.upsert(rec)
+
+        self.save()
+        return state
+
+    def apply_pending_refund_if_due(self, pid: int) -> bool:
+        state = self.refund_state.get(pid)
+        if not state or state.get("applied"):
+            return False
+
+        apply_at = state.get("apply_at")
+        if apply_at is None or time.time() < float(apply_at):
+            return False
+
+        rec = self.ensure_payment(pid)
+        rec.status = "refunded"
+        rec.status_sequence = ["refunded"]
+        rec.sequence_index = 0
+        state["applied"] = True
+        state["applied_at"] = time.time()
+        self.upsert(rec)
+        self.save()
+        print(f"[{utc_now_iso()}] Refund transition applied for payment_id={pid}")
+        return True
 
 
 STORE: PaymentStore
@@ -194,10 +288,16 @@ class MpSimHandler(BaseHTTPRequestHandler):
                 }
             return json_response(self, 200, payload)
 
+        if path == "/__admin/next_refund":
+            with _LOCK:
+                mode = STORE.get_next_refund_mode()
+            return json_response(self, 200, {"ok": True, "next_refund_mode": mode})
+
         # Payments endpoints
         pid = self._extract_payment_id(path)
         if pid is not None:
             with _LOCK:
+                STORE.apply_pending_refund_if_due(pid)
                 rec = STORE.get(pid)
                 if rec is None:
                     return json_response(self, 404, {"message": "payment not found", "id": pid})
@@ -219,12 +319,51 @@ class MpSimHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
         path = parsed.path.rstrip("/")
+        qs = parse_qs(parsed.query)
 
         # Reset
         if path == "/__admin/reset":
             with _LOCK:
                 STORE.reset()
             return json_response(self, 200, {"ok": True, "message": "reset done"})
+
+        if path == "/__admin/next_refund/reset":
+            with _LOCK:
+                mode = STORE.set_next_refund_mode("ok", 0)
+            print(f"[{utc_now_iso()}] next_refund_mode set via admin: {mode}")
+            return json_response(self, 200, {"ok": True, "next_refund_mode": mode})
+
+        if path == "/__admin/next_refund/ok":
+            with _LOCK:
+                mode = STORE.set_next_refund_mode("ok", 0)
+            print(f"[{utc_now_iso()}] next_refund_mode set via admin: {mode}")
+            return json_response(self, 200, {"ok": True, "next_refund_mode": mode})
+
+        if path == "/__admin/next_refund/delay_ok":
+            seconds = self._query_int(qs, "seconds", DEFAULT_REFUND_DELAY_OK_SECONDS)
+            with _LOCK:
+                mode = STORE.set_next_refund_mode("delay_ok", seconds)
+            print(f"[{utc_now_iso()}] next_refund_mode set via admin: {mode}")
+            return json_response(self, 200, {"ok": True, "next_refund_mode": mode})
+
+        if path == "/__admin/next_refund/delay_timeout":
+            seconds = self._query_int(qs, "seconds", DEFAULT_REFUND_DELAY_TIMEOUT_SECONDS)
+            with _LOCK:
+                mode = STORE.set_next_refund_mode("delay_timeout", seconds)
+            print(f"[{utc_now_iso()}] next_refund_mode set via admin: {mode}")
+            return json_response(self, 200, {"ok": True, "next_refund_mode": mode})
+
+        if path == "/__admin/next_refund/no_response":
+            with _LOCK:
+                mode = STORE.set_next_refund_mode("no_response", 0)
+            print(f"[{utc_now_iso()}] next_refund_mode set via admin: {mode}")
+            return json_response(self, 200, {"ok": True, "next_refund_mode": mode})
+
+        if self._is_refund_path(path):
+            refund_pid = self._extract_refund_payment_id(path)
+            if refund_pid is None:
+                return json_response(self, 400, {"message": "invalid payment id"})
+            return self._handle_refund(refund_pid)
 
         # Upsert payment
         if path == "/__admin/payments":
@@ -270,6 +409,66 @@ class MpSimHandler(BaseHTTPRequestHandler):
         if len(parts) == 2 and parts[0] == "payments":
             return self._to_int(parts[1])
         return None
+
+    def _is_refund_path(self, path: str) -> bool:
+        parts = path.strip("/").split("/")
+        if len(parts) == 4 and parts[0] == "v1" and parts[1] == "payments" and parts[3] == "refunds":
+            return True
+        if len(parts) == 3 and parts[0] == "payments" and parts[2] == "refunds":
+            return True
+        return False
+
+    def _extract_refund_payment_id(self, path: str) -> Optional[int]:
+        parts = path.strip("/").split("/")
+        if len(parts) == 4 and parts[0] == "v1" and parts[1] == "payments" and parts[3] == "refunds":
+            return self._to_int(parts[2])
+        if len(parts) == 3 and parts[0] == "payments" and parts[2] == "refunds":
+            return self._to_int(parts[1])
+        return None
+
+    def _query_int(self, qs: Dict[str, list[str]], key: str, default: int) -> int:
+        raw = qs.get(key, [str(default)])[0]
+        try:
+            return max(0, int(raw))
+        except (TypeError, ValueError):
+            return default
+
+    def _handle_refund(self, pid: int) -> None:
+        if pid is None:
+            return json_response(self, 400, {"message": "invalid payment id"})
+
+        with _LOCK:
+            rec = STORE.ensure_payment(pid)
+            mode = STORE.consume_next_refund_mode()
+
+        mode_name = str(mode.get("mode", "ok"))
+        mode_delay = int(mode.get("delay_seconds", 0) or 0)
+        print(f"[{utc_now_iso()}] next_refund_mode consumed by payment_id={pid}: {mode}")
+
+        if mode_name == "no_response":
+            print(f"[{utc_now_iso()}] refund no_response mode active for payment_id={pid}; sleeping")
+            time.sleep(3600)
+            return
+
+        delay_to_apply = 0
+        if mode_name == "delay_ok":
+            delay_to_apply = mode_delay if mode_delay > 0 else DEFAULT_REFUND_DELAY_OK_SECONDS
+        elif mode_name == "delay_timeout":
+            delay_to_apply = mode_delay if mode_delay > 0 else DEFAULT_REFUND_DELAY_TIMEOUT_SECONDS
+
+        with _LOCK:
+            state = STORE.schedule_refund(pid, mode_name, delay_to_apply)
+
+        refund_id = int(time.time() * 1000)
+        payload = {
+            "id": refund_id,
+            "payment_id": rec.id,
+            "status": "approved",
+            "mode_used": mode_name,
+            "delay_seconds": delay_to_apply,
+            "refund_state": state,
+        }
+        return json_response(self, 200, payload)
 
     def _to_int(self, s: str) -> Optional[int]:
         try:
@@ -390,8 +589,16 @@ def run_server(host: str, port: int, persist_path: Optional[str]) -> None:
     print("  GET  /v1/payments/{id}")
     print("  GET  /payments/{id}")
     print("  GET  /__admin/payments")
+    print("  GET  /__admin/next_refund")
     print("  POST /__admin/payments")
     print("  POST /__admin/reset")
+    print("  POST /__admin/next_refund/reset")
+    print("  POST /__admin/next_refund/ok")
+    print("  POST /__admin/next_refund/delay_ok?seconds=45")
+    print("  POST /__admin/next_refund/delay_timeout?seconds=600")
+    print("  POST /__admin/next_refund/no_response")
+    print("  POST /v1/payments/{id}/refunds")
+    print("  POST /payments/{id}/refunds")
     print("  POST /__admin/scenarios/simple")
     print("  POST /__admin/scenarios/mixed_ok")
     print("  POST /__admin/scenarios/mixed_fail")
