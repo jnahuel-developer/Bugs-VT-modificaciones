@@ -623,18 +623,22 @@ namespace StockNotifier
 
         private static async Task<(bool found, string status)> SimGetPaymentStatusAsync(HttpClient http, long idPayment)
         {
+            string relativeUrl = $"/v1/payments/{idPayment}";
+            string absoluteUrl = new Uri(http.BaseAddress, relativeUrl.TrimStart('/')).ToString();
+
             try
             {
-                HttpResponseMessage response = await http.GetAsync($"/v1/payments/{idPayment}");
+                HttpResponseMessage response = await http.GetAsync(relativeUrl);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
+                    Log.Info($"mp_simulator: GET payment no encontrado. url={absoluteUrl}, status={(int)response.StatusCode}");
                     return (false, null);
                 }
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Log.Info($"mp_simulator: respuesta inesperada al consultar payment {idPayment}. StatusCode={(int)response.StatusCode}.");
+                    Log.Info($"mp_simulator: GET payment respuesta inesperada. url={absoluteUrl}, status={(int)response.StatusCode}");
                     return (false, null);
                 }
 
@@ -643,35 +647,38 @@ namespace StockNotifier
             }
             catch (Exception ex)
             {
-                Log.Error($"mp_simulator: error al consultar payment {idPayment}: {ex.Message}");
+                Log.Error($"mp_simulator: excepción al consultar payment {idPayment}: {ex.Message} | inner: {ex.InnerException?.Message}");
                 return (false, null);
             }
         }
 
         private static async Task<bool> SimPostRefundAsync(HttpClient http, long idPayment)
         {
+            string relativeUrl = $"/v1/payments/{idPayment}/refunds";
+            string absoluteUrl = new Uri(http.BaseAddress, relativeUrl.TrimStart('/')).ToString();
+
             try
             {
+                Log.Info($"mp_simulator: POST refund => {absoluteUrl}");
+
                 using (var content = new StringContent("{}", Encoding.UTF8, "application/json"))
                 {
-                    HttpResponseMessage response = await http.PostAsync($"/v1/payments/{idPayment}/refunds", content);
-                    if (response.IsSuccessStatusCode)
+                    HttpResponseMessage response = await http.PostAsync(relativeUrl, content);
+                    Log.Info($"mp_simulator: POST refund status={(int)response.StatusCode}");
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrWhiteSpace(responseBody))
                     {
-                        return true;
+                        string bodyTruncado = responseBody.Length > 500 ? responseBody.Substring(0, 500) : responseBody;
+                        Log.Info($"mp_simulator: POST refund response={bodyTruncado}");
                     }
 
-                    Log.Info($"mp_simulator: respuesta inesperada al solicitar refund para {idPayment}. StatusCode={(int)response.StatusCode}.");
-                    return false;
+                    return response.IsSuccessStatusCode;
                 }
-            }
-            catch (TaskCanceledException ex)
-            {
-                Log.Info($"mp_simulator: no se obtuvo respuesta al solicitar refund para {idPayment}: {ex.Message}. Se continuará con confirmación por consulta.");
-                return false;
             }
             catch (Exception ex)
             {
-                Log.Info($"mp_simulator: no se obtuvo respuesta al solicitar refund para {idPayment}: {ex.Message}. Se continuará con confirmación por consulta.");
+                Log.Error($"mp_simulator: excepción al solicitar refund {idPayment}: {ex.Message} | inner: {ex.InnerException?.Message}");
                 return false;
             }
         }
@@ -686,7 +693,9 @@ namespace StockNotifier
 
             if (reintentos > 0)
             {
-                await Task.Delay(60000);
+                // mod0011: en modo simulador reducimos el tiempo entre reintentos a 3s para pruebas locales.
+                // Revertir a 60s antes de habilitar ejecución contra Mercado Pago real / producción.
+                await Task.Delay(TimeSpan.FromSeconds(3));
                 Log.Info($"Reintentando reembolso para el pago con ID: {idPayment}, reintento número: {reintentos}");
             }
 
@@ -708,7 +717,7 @@ namespace StockNotifier
                 return false;
             }
 
-            Log.Info("Esperando 1 minuto para obtener estado del pago...");
+            Log.Info("Esperando 3 segundos para obtener estado del pago...");
             return await ProcesarReembolsoSimuladorAsync(http, idPayment, reintentos + 1);
         }
 
