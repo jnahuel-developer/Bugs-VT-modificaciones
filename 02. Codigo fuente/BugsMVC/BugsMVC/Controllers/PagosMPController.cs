@@ -361,7 +361,7 @@ namespace BugsMVC.Controllers
                                             operacionMixta.PaymentId2 = idComprobante;
                                         }
 
-                                        if (!OperacionMixtaTieneDosPatasRegistradas(operacionMixta))
+                                        if (!OperacionMixtaTieneDosPagosParcialesRegistrados(operacionMixta))
                                         {
                                             bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
                                             await bugsDbContext.SaveChangesAsync();
@@ -496,7 +496,7 @@ namespace BugsMVC.Controllers
                                 ((operacionMixta.PaymentId1 == 0 && !operacionMixta.PaymentId2.HasValue) ||
                                  (operacionMixta.PaymentId2 == 0 && !operacionMixta.PaymentId1.HasValue)))
                             {
-                                Log.Info($"[{idComprobante}] - Operación mixta ya tiene una pata rechazada/cancelada registrada en 0 y sin aprobados. Se ignora el evento para evitar cierre prematuro. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}.");
+                                Log.Info($"[{idComprobante}] - Operación mixta ya tiene un pago parcial rechazado/cancelado registrado en 0 y sin aprobados. Se ignora el evento para evitar cierre prematuro. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}.");
                                 return;
                             }
 
@@ -516,10 +516,10 @@ namespace BugsMVC.Controllers
 
                             if (paymentIdCampoActualizado != null)
                             {
-                                Log.Info($"[{idComprobante}] - Registrando pata rechazada/cancelada en 0. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}, CampoActualizado={paymentIdCampoActualizado}.");
+                                Log.Info($"[{idComprobante}] - Registrando pago parcial rechazado/cancelado en 0. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}, CampoActualizado={paymentIdCampoActualizado}.");
                             }
 
-                            if (!OperacionMixtaTieneDosPatasRegistradas(operacionMixta))
+                            if (!OperacionMixtaTieneDosPagosParcialesRegistrados(operacionMixta))
                             {
                                 bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
                                 await bugsDbContext.SaveChangesAsync();
@@ -739,7 +739,7 @@ namespace BugsMVC.Controllers
                 (x.PaymentId1 == idComprobante || x.PaymentId2 == idComprobante));
         }
 
-        private bool OperacionMixtaTieneDosPatasRegistradas(MercadoPagoOperacionMixta operacion)
+        private bool OperacionMixtaTieneDosPagosParcialesRegistrados(MercadoPagoOperacionMixta operacion)
         {
             return operacion.PaymentId1.HasValue && operacion.PaymentId2.HasValue;
         }
