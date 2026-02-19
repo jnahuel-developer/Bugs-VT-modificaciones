@@ -155,90 +155,18 @@ namespace StockNotifier
                     Maquina maquina = db.Maquinas.Where(x => x.MaquinaID == mercadoPago.MaquinaId).FirstOrDefault();
                     Operador operador = db.Operadores.Where(x => x.OperadorID == maquina.OperadorID).FirstOrDefault();
 
-                    if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
-                    {
-                        ProcesarCandidatoDevolucionPagosMixtosPlaceholder(mercadoPago, operador, maquina);
-                    }
-
                     if (mercadoPago.Comprobante != "" && mercadoPago.Entidad == "MP" && operador.AccessToken != null)
                     {
-                        Log.Info("Devolviendo al Operador: " + operador.OperadorID);
-
-                        MercadoPagoConfig.AccessToken = null;
-                        MercadoPagoConfig.AccessToken = operador.AccessToken;
-
-                        long idPayment = 0;
-                        long.TryParse(mercadoPago.Comprobante, out idPayment);
-                        Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
-
-                        Payment payment = null;
-
-                        //Intentamos obtener la información del payment utilizando el cliente nuevo
-                        PaymentClient paymentClient = new PaymentClient();
-
-                        try
+                        // Se habilita el flujo de atención de pagos mixtos solo si está habilitado en el proyecto
+                        if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
                         {
-                            Log.Info($"Intentando obtener información de payment...");
-                            payment = await paymentClient.GetAsync(idPayment);
+                            ProcesarCandidatoDevolucionPagosMixtosPlaceholder(mercadoPago, operador, maquina);
 
-                            if (payment != null)
-                            {
-                                Log.Info("Comprobante encontrado");
-
-                                if (payment.Status != PaymentStatus.Refunded)
-                                {
-                                    //Procesar reembolso
-                                    bool isReembolsadoCorrectamente = await ProcesarReembolsoAsync(paymentClient, idPayment);
-
-                                    if (isReembolsadoCorrectamente)
-                                    {
-                                        Log.Info("Actualizando registro en MercadoPagoTable");
-                                        //mercadoPago.Descripcion = "Envio ok.";
-                                        mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
-                                        mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
-                                    }
-                                    else
-                                    {
-                                        string errorMessage = "No se logró realizar la devolución tras 3 intentos. Status Payment: " + payment.Status;
-                                        Log.Info(errorMessage);
-                                        payment = await paymentClient.GetAsync(idPayment);
-                                        mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
-                                        mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.AVISO_FALLIDO;
-                                        mercadoPago.Descripcion = errorMessage;
-                                    }
-
-                                    db.Entry(mercadoPago).State = EntityState.Modified;
-                                    db.SaveChanges();
-                                }
-                                else
-                                {
-                                    Log.Info("El pago ya ha sido reembolsado anteriormente, no se realizará otra devolución.");
-                                    Log.Info("Corrigiendo registro en MercadoPagoTable...");
-                                    //mercadoPago.Descripcion = "Envio ok.";
-                                    mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
-                                    mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
-
-                                    db.Entry(mercadoPago).State = EntityState.Modified;
-                                    db.SaveChanges();
-                                }
-
-                            }
-                            else
-                            {
-                                //No se encontró el pago,  no deberia suceder.
-                                Log.Info("No se encontro el pago");
-                            }
-                        }
-                        catch (MercadoPagoApiException ex)
-                        {
-                            // Maneja los errores de la API de MercadoPago
-                            Log.Error("Se produjo un error con la API de Mercado Pago.");
-                            Log.Error($"Error: {ex.Message}");
-                            Log.Error($"Status Code: {ex.StatusCode}");
-                            Log.Error($"Error de API: {ex.ApiError}");
-                            Log.Error($"Respuesta de API: {ex.ApiResponse}");
+                            // Importante: por ahora NO se corta el flujo. Se continúa como hasta ahora.
+                            // (No usar continue; no devolver; no cambiar estado)
                         }
 
+                        await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
                     }
                     else
                     {
@@ -399,6 +327,87 @@ namespace StockNotifier
                 Log.Error($"Error al enviar mail a: {mailsDestinatario} - {ex.Message}", ex);
             }
 
+        }
+
+
+        private static async Task ProcesarDevolucionMercadoPagoAsync(BugsContext db, MercadoPagoTable mercadoPago, Operador operador, Maquina maquina)
+        {
+            Log.Info("Devolviendo al Operador: " + operador.OperadorID);
+
+            MercadoPagoConfig.AccessToken = null;
+            MercadoPagoConfig.AccessToken = operador.AccessToken;
+
+            long idPayment = 0;
+            long.TryParse(mercadoPago.Comprobante, out idPayment);
+            Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
+
+            Payment payment = null;
+
+            //Intentamos obtener la información del payment utilizando el cliente nuevo
+            PaymentClient paymentClient = new PaymentClient();
+
+            try
+            {
+                Log.Info($"Intentando obtener información de payment...");
+                payment = await paymentClient.GetAsync(idPayment);
+
+                if (payment != null)
+                {
+                    Log.Info("Comprobante encontrado");
+
+                    if (payment.Status != PaymentStatus.Refunded)
+                    {
+                        //Procesar reembolso
+                        bool isReembolsadoCorrectamente = await ProcesarReembolsoAsync(paymentClient, idPayment);
+
+                        if (isReembolsadoCorrectamente)
+                        {
+                            Log.Info("Actualizando registro en MercadoPagoTable");
+                            //mercadoPago.Descripcion = "Envio ok.";
+                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+                        }
+                        else
+                        {
+                            string errorMessage = "No se logró realizar la devolución tras 3 intentos. Status Payment: " + payment.Status;
+                            Log.Info(errorMessage);
+                            payment = await paymentClient.GetAsync(idPayment);
+                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.AVISO_FALLIDO;
+                            mercadoPago.Descripcion = errorMessage;
+                        }
+
+                        db.Entry(mercadoPago).State = EntityState.Modified;
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        Log.Info("El pago ya ha sido reembolsado anteriormente, no se realizará otra devolución.");
+                        Log.Info("Corrigiendo registro en MercadoPagoTable...");
+                        //mercadoPago.Descripcion = "Envio ok.";
+                        mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                        mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+
+                        db.Entry(mercadoPago).State = EntityState.Modified;
+                        db.SaveChanges();
+                    }
+
+                }
+                else
+                {
+                    //No se encontró el pago,  no deberia suceder.
+                    Log.Info("No se encontro el pago");
+                }
+            }
+            catch (MercadoPagoApiException ex)
+            {
+                // Maneja los errores de la API de MercadoPago
+                Log.Error("Se produjo un error con la API de Mercado Pago.");
+                Log.Error($"Error: {ex.Message}");
+                Log.Error($"Status Code: {ex.StatusCode}");
+                Log.Error($"Error de API: {ex.ApiError}");
+                Log.Error($"Respuesta de API: {ex.ApiResponse}");
+            }
         }
 
         /// <summary>
