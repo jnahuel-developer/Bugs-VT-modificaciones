@@ -34,6 +34,15 @@ namespace StockNotifier
         {
             try
             {
+                AmbienteConfigHelper.Inicializar();
+                bool pagosMixtosHabilitados = PagosMixtosConfigHelper.PagosMixtosHabilitados;
+                bool ambienteDesarrolloHabilitado = AmbienteConfigHelper.AmbienteDesarrolloHabilitado;
+                bool ambienteSimuladoresHabilitado = AmbienteConfigHelper.AmbienteSimuladoresHabilitado;
+
+                Log.Info($"Configuración: Pagos mixtos habilitados = {pagosMixtosHabilitados}.");
+                Log.Info($"Configuración: Ambiente de desarrollo habilitado = {ambienteDesarrolloHabilitado}.");
+                Log.Info($"Configuración: Ambiente de simuladores habilitado = {ambienteSimuladoresHabilitado}.");
+
                 db = new BugsContext();
 
                 var stocks = db.Stocks.ToList();
@@ -145,6 +154,11 @@ namespace StockNotifier
                     //Devolver dinero
                     Maquina maquina = db.Maquinas.Where(x => x.MaquinaID == mercadoPago.MaquinaId).FirstOrDefault();
                     Operador operador = db.Operadores.Where(x => x.OperadorID == maquina.OperadorID).FirstOrDefault();
+
+                    if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
+                    {
+                        ProcesarCandidatoDevolucionPagosMixtosPlaceholder(mercadoPago, operador, maquina);
+                    }
 
                     if (mercadoPago.Comprobante != "" && mercadoPago.Entidad == "MP" && operador.AccessToken != null)
                     {
@@ -461,6 +475,15 @@ namespace StockNotifier
                 Log.Info("Número máximo de reintentos alcanzados, Mercado Pago no ha terminado de registrar la devolución...");
                 return false;
             }
+        }
+
+        private static void ProcesarCandidatoDevolucionPagosMixtosPlaceholder(MercadoPagoTable mercadoPago, Operador operador, Maquina maquina)
+        {
+            string operadorId = operador != null ? operador.OperadorID.ToString() : "null";
+            string mercadoPagoId = mercadoPago != null ? mercadoPago.MercadoPagoId.ToString() : "null";
+            string comprobante = mercadoPago != null ? mercadoPago.Comprobante : "null";
+
+            Log.Info($"Pagos mixtos habilitados: se detectó candidato de devolución. OperadorId={operadorId}, MercadoPagoId={mercadoPagoId}, Comprobante={comprobante}.");
         }
 
     }
