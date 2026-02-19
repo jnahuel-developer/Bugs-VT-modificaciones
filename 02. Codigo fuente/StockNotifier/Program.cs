@@ -195,6 +195,9 @@ namespace StockNotifier
 
                 }
 
+                Log.Info("Control Devoluciones NO PROCESABLES");
+                await ProcesarDevolucionesNoProcesablesAsync(db);
+
                 ProcesarListaStock("SistemaVT - Alarma Stock Muy Bajo", mailsStockMuyBajo);
                 ProcesarListaStock("SistemaVT - Alarma Stock Bajo", mailsStockBajo);
 
@@ -594,6 +597,128 @@ namespace StockNotifier
                 Log.Info($"Pago asociado a operación mixta (MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}): no se detectó segundo comprobante válido; se devuelve solo {paymentIdActual}.");
                 await ProcesarDevolucionMercadoPagoAsync(db, mercadoPago, operador, maquina);
             }
+        }
+
+        private static async Task ProcesarDevolucionesNoProcesablesAsync(BugsContext db)
+        {
+            if (!PagosMixtosConfigHelper.PagosMixtosHabilitados)
+            {
+                Log.Info("Pagos mixtos deshabilitados: se omite Control Devoluciones NO PROCESABLES.");
+                return;
+            }
+
+            var candidatos = db.MercadoPagoTable
+                .Where(x => x.MercadoPagoEstadoFinancieroId == 4)
+                .Where(x => x.MercadoPagoEstadoTransmisionId == 5)
+                .ToList();
+
+            Log.Info($"Inicio Control Devoluciones NO PROCESABLES. Cantidad de candidatos: {candidatos.Count}.");
+
+            foreach (var mercadoPago in candidatos)
+            {
+                Log.Info($"Analizando MercadoPagoId={mercadoPago.MercadoPagoId}, Comprobante={mercadoPago.Comprobante}, MaquinaId={mercadoPago.MaquinaId}.");
+
+                Maquina maquina = db.Maquinas.FirstOrDefault(x => x.MaquinaID == mercadoPago.MaquinaId);
+                if (maquina == null)
+                {
+                    Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: no se encontró máquina para MaquinaId={mercadoPago.MaquinaId}.");
+                    continue;
+                }
+
+                Operador operador = db.Operadores.FirstOrDefault(x => x.OperadorID == maquina.OperadorID);
+                if (operador == null)
+                {
+                    Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: no se encontró operador para OperadorId={maquina.OperadorID}.");
+                    continue;
+                }
+
+                Log.Info($"Datos de operación: MercadoPagoId={mercadoPago.MercadoPagoId}, Comprobante={mercadoPago.Comprobante}, MaquinaId={maquina.MaquinaID}, OperadorId={operador.OperadorID}.");
+
+                if (string.IsNullOrWhiteSpace(mercadoPago.Comprobante))
+                {
+                    Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: comprobante vacío.");
+                    continue;
+                }
+
+                if (!string.Equals(mercadoPago.Entidad, "MP", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: entidad no válida ({mercadoPago.Entidad}).");
+                    continue;
+                }
+
+                if (operador.AccessToken == null)
+                {
+                    Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: operador sin AccessToken.");
+                    continue;
+                }
+
+                if (!long.TryParse(mercadoPago.Comprobante, out long idPrincipal))
+                {
+                    Log.Info($"Se descarta MercadoPagoId={mercadoPago.MercadoPagoId}: comprobante no numérico ({mercadoPago.Comprobante}).");
+                    continue;
+                }
+
+                HashSet<long> idsADevolver = new HashSet<long>();
+                idsADevolver.Add(idPrincipal);
+
+                var operacionMixta = db.MercadoPagoOperacionMixta.FirstOrDefault(x =>
+                    x.PaymentId1 == idPrincipal || x.PaymentId2 == idPrincipal);
+
+                if (operacionMixta != null)
+                {
+                    long? idExtra = operacionMixta.PaymentId1 == idPrincipal
+                        ? operacionMixta.PaymentId2
+                        : operacionMixta.PaymentId1;
+
+                    if (idExtra.HasValue && idExtra.Value > 0)
+                    {
+                        idsADevolver.Add(idExtra.Value);
+                    }
+                    else
+                    {
+                        Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: operación mixta detectada (MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}) sin par válido para devolución.");
+                    }
+                }
+
+                Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: IDs a devolver => {string.Join(", ", idsADevolver)}.");
+
+                bool devolucionCompletaConfirmada = true;
+
+                foreach (long idDevolucion in idsADevolver)
+                {
+                    try
+                    {
+                        bool confirmado = await EjecutarRefundMercadoPagoAsync(operador, idDevolucion);
+                        Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: resultado devolución comprobante {idDevolucion} => {(confirmado ? "confirmado" : "no confirmado")}.");
+
+                        if (!confirmado)
+                        {
+                            devolucionCompletaConfirmada = false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        devolucionCompletaConfirmada = false;
+                        Log.Error($"MercadoPagoId={mercadoPago.MercadoPagoId}: error al devolver comprobante {idDevolucion}. Detalle: {ex.Message}");
+                    }
+                }
+
+                if (devolucionCompletaConfirmada)
+                {
+                    mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                    mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+                    db.Entry(mercadoPago).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                    Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.");
+                }
+                else
+                {
+                    Log.Info($"MercadoPagoId={mercadoPago.MercadoPagoId}: devolución no confirmada para uno o más IDs, no se actualiza estado.");
+                }
+            }
+
+            Log.Info($"Fin Control Devoluciones NO PROCESABLES. Procesados: {candidatos.Count} candidatos.");
         }
 
         private static async Task<bool> EjecutarRefundMercadoPagoAsync(Operador operador, long idPayment)
