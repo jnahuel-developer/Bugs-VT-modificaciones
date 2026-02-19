@@ -15,6 +15,9 @@ using System.IO;
 using BugsMVC.Controllers;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
+using System.Text;
 
 using System.Data.SqlClient;
 using System.Data;
@@ -26,6 +29,9 @@ namespace StockNotifier
 {
     class Program
     {
+        private const string MpSimulatorBaseUrl = "http://127.0.0.1:5005";
+        private static readonly TimeSpan MpSimulatorHttpTimeout = TimeSpan.FromSeconds(60);
+
         public static BugsContext db;
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -329,13 +335,74 @@ namespace StockNotifier
 
         private static async Task ProcesarDevolucionMercadoPagoAsync(BugsContext db, MercadoPagoTable mercadoPago, Operador operador, Maquina maquina)
         {
+            long idPayment = 0;
+            long.TryParse(mercadoPago.Comprobante, out idPayment);
+
+            if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
+            {
+                Log.Info("Devolviendo al Operador: " + operador.OperadorID);
+                Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
+                Log.Info($"Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante {idPayment}.");
+
+                try
+                {
+                    using (HttpClient httpClient = CreateMpSimulatorHttpClient())
+                    {
+                        var estadoInicial = await SimGetPaymentStatusAsync(httpClient, idPayment);
+                        if (!estadoInicial.found)
+                        {
+                            Log.Info($"mp_simulator: payment {idPayment} no existe al consultar estado; se intentará refund igualmente.");
+                        }
+
+                        if (string.Equals(estadoInicial.status, "refunded", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Log.Info("El pago ya ha sido reembolsado anteriormente, no se realizará otra devolución.");
+                            Log.Info("Corrigiendo registro en MercadoPagoTable...");
+                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+
+                            db.Entry(mercadoPago).State = EntityState.Modified;
+                            db.SaveChanges();
+                            return;
+                        }
+
+                        bool isReembolsadoCorrectamente = await ProcesarReembolsoSimuladorAsync(httpClient, idPayment);
+
+                        if (isReembolsadoCorrectamente)
+                        {
+                            Log.Info("Actualizando registro en MercadoPagoTable");
+                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.DEVUELTO;
+                        }
+                        else
+                        {
+                            var estadoFinal = await SimGetPaymentStatusAsync(httpClient, idPayment);
+                            string estadoPago = string.IsNullOrWhiteSpace(estadoFinal.status) ? "desconocido" : estadoFinal.status;
+                            string errorMessage = "No se logró realizar la devolución tras 3 intentos. Status Payment: " + estadoPago;
+                            Log.Info(errorMessage);
+                            mercadoPago.MercadoPagoEstadoTransmisionId = (int)MercadoPagoEstadoTransmision.States.ERROR_CONEXION;
+                            mercadoPago.MercadoPagoEstadoFinancieroId = (int)MercadoPagoEstadoFinanciero.States.AVISO_FALLIDO;
+                            mercadoPago.Descripcion = errorMessage;
+                        }
+
+                        db.Entry(mercadoPago).State = EntityState.Modified;
+                        db.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Se produjo un error al procesar la devolución contra mp_simulator.");
+                    Log.Error($"Error: {ex.Message}");
+                }
+
+                return;
+            }
+
             Log.Info("Devolviendo al Operador: " + operador.OperadorID);
 
             MercadoPagoConfig.AccessToken = null;
             MercadoPagoConfig.AccessToken = operador.AccessToken;
 
-            long idPayment = 0;
-            long.TryParse(mercadoPago.Comprobante, out idPayment);
             Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
 
             Payment payment = null;
@@ -531,11 +598,146 @@ namespace StockNotifier
 
         private static async Task<bool> EjecutarRefundMercadoPagoAsync(Operador operador, long idPayment)
         {
+            if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
+            {
+                using (HttpClient httpClient = CreateMpSimulatorHttpClient())
+                {
+                    return await ProcesarReembolsoSimuladorAsync(httpClient, idPayment);
+                }
+            }
+
             MercadoPagoConfig.AccessToken = null;
             MercadoPagoConfig.AccessToken = operador.AccessToken;
 
             PaymentClient paymentClient = new PaymentClient();
             return await ProcesarReembolsoAsync(paymentClient, idPayment);
+        }
+
+        private static HttpClient CreateMpSimulatorHttpClient()
+        {
+            HttpClient client = new HttpClient();
+            client.BaseAddress = new Uri(MpSimulatorBaseUrl);
+            client.Timeout = MpSimulatorHttpTimeout;
+            return client;
+        }
+
+        private static async Task<(bool found, string status)> SimGetPaymentStatusAsync(HttpClient http, long idPayment)
+        {
+            string relativeUrl = $"/v1/payments/{idPayment}";
+            string absoluteUrl = new Uri(http.BaseAddress, relativeUrl.TrimStart('/')).ToString();
+
+            try
+            {
+                HttpResponseMessage response = await http.GetAsync(relativeUrl);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Log.Info($"mp_simulator: GET payment no encontrado. url={absoluteUrl}, status={(int)response.StatusCode}");
+                    return (false, null);
+                }
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Log.Info($"mp_simulator: GET payment respuesta inesperada. url={absoluteUrl}, status={(int)response.StatusCode}");
+                    return (false, null);
+                }
+
+                MpSimulatorPaymentResponse dto = await DeserializeMpSimulatorResponseAsync(response);
+                return (true, dto?.Status);
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"mp_simulator: excepción al consultar payment {idPayment}: {ex.Message} | inner: {ex.InnerException?.Message}");
+                return (false, null);
+            }
+        }
+
+        private static async Task<bool> SimPostRefundAsync(HttpClient http, long idPayment)
+        {
+            string relativeUrl = $"/v1/payments/{idPayment}/refunds";
+            string absoluteUrl = new Uri(http.BaseAddress, relativeUrl.TrimStart('/')).ToString();
+
+            try
+            {
+                Log.Info($"mp_simulator: POST refund => {absoluteUrl}");
+
+                using (var content = new StringContent("{}", Encoding.UTF8, "application/json"))
+                {
+                    HttpResponseMessage response = await http.PostAsync(relativeUrl, content);
+                    Log.Info($"mp_simulator: POST refund status={(int)response.StatusCode}");
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrWhiteSpace(responseBody))
+                    {
+                        string bodyTruncado = responseBody.Length > 500 ? responseBody.Substring(0, 500) : responseBody;
+                        Log.Info($"mp_simulator: POST refund response={bodyTruncado}");
+                    }
+
+                    return response.IsSuccessStatusCode;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"mp_simulator: excepción al solicitar refund {idPayment}: {ex.Message} | inner: {ex.InnerException?.Message}");
+                return false;
+            }
+        }
+
+        private static async Task<bool> ProcesarReembolsoSimuladorAsync(HttpClient http, long idPayment, int reintentos = 0)
+        {
+            if (reintentos == 0)
+            {
+                Log.Info($"Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante {idPayment}.");
+                await SimPostRefundAsync(http, idPayment);
+            }
+
+            if (reintentos > 0)
+            {
+                // mod0011: en modo simulador reducimos el tiempo entre reintentos a 3s para pruebas locales.
+                // Revertir a 60s antes de habilitar ejecución contra Mercado Pago real / producción.
+                await Task.Delay(TimeSpan.FromSeconds(3));
+                Log.Info($"Reintentando reembolso para el pago con ID: {idPayment}, reintento número: {reintentos}");
+            }
+
+            var estado = await SimGetPaymentStatusAsync(http, idPayment);
+            string statusActual = estado.status;
+
+            Log.Info("Revisando status del pago...");
+            Log.Info("Payment Status: " + statusActual);
+
+            if (string.Equals(statusActual, "refunded", StringComparison.OrdinalIgnoreCase))
+            {
+                Log.Info($"mp_simulator: refund confirmado para comprobante {idPayment}.");
+                return true;
+            }
+
+            if (reintentos >= 3)
+            {
+                Log.Info($"mp_simulator: no se confirmó refund para comprobante {idPayment} tras {reintentos + 1} intentos.");
+                return false;
+            }
+
+            Log.Info("Esperando 3 segundos para obtener estado del pago...");
+            return await ProcesarReembolsoSimuladorAsync(http, idPayment, reintentos + 1);
+        }
+
+        private static async Task<MpSimulatorPaymentResponse> DeserializeMpSimulatorResponseAsync(HttpResponseMessage response)
+        {
+            using (Stream stream = await response.Content.ReadAsStreamAsync())
+            {
+                var serializer = new DataContractJsonSerializer(typeof(MpSimulatorPaymentResponse));
+                return serializer.ReadObject(stream) as MpSimulatorPaymentResponse;
+            }
+        }
+
+        [DataContract]
+        private class MpSimulatorPaymentResponse
+        {
+            [DataMember(Name = "id")]
+            public long Id { get; set; }
+
+            [DataMember(Name = "status")]
+            public string Status { get; set; }
         }
 
     }

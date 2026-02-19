@@ -174,3 +174,22 @@ mod0010
 		- (ninguno)
 	Archivos eliminados:
 		- (ninguno)
+
+mod0011
+	Rama: mod0011
+	Módulo principal: StockNotifier
+	Estado: Fusionada en develop
+	Descripción:
+		- Se incorporó desvío condicional por flag (Ambiente:Simuladores) para ejecutar devoluciones contra el mp_simulator cuando está ON, manteniendo sin cambios el flujo original del SDK de Mercado Pago cuando está OFF.
+		- Se implementó el desvío tanto en el flujo principal de devolución (ProcesarDevolucionMercadoPagoAsync) como en la devolución del segundo comprobante para pagos mixtos (EjecutarRefundMercadoPagoAsync).
+		- Se agregaron helpers mínimos embebidos en Program.cs para operar contra el simulador (base URL hardcodeada http://127.0.0.1:5005): consulta de payment (GET) y solicitud de refund (POST /v1/payments/{id}/refunds), con timeout controlado.
+		- Se mejoró la trazabilidad del flujo simulador con logs de URL, status code, y body de respuesta truncado, más detalle de errores/InnerException en fallas de HTTP.
+		- Se ajustó el polling de confirmación del flujo simulador a 3 segundos entre reintentos, dejando comentario explícito “mod0011” para revertir antes de producción; el delay del flujo SDK real quedó intacto.
+		- Se corrigieron errores de compilación por serialización JSON agregando la referencia System.Runtime.Serialization al csproj y resolviendo colisión de scope de variables.
+	Archivos modificados:
+		- 02. Codigo fuente\StockNotifier\Program.cs
+		- 02. Codigo fuente\StockNotifier\StockNotifier.csproj
+	Archivos nuevos:
+		- (ninguno)
+	Archivos eliminados:
+		- (ninguno)
