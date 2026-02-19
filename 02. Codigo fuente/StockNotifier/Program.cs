@@ -335,12 +335,12 @@ namespace StockNotifier
 
         private static async Task ProcesarDevolucionMercadoPagoAsync(BugsContext db, MercadoPagoTable mercadoPago, Operador operador, Maquina maquina)
         {
+            long idPayment = 0;
+            long.TryParse(mercadoPago.Comprobante, out idPayment);
+
             if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
             {
                 Log.Info("Devolviendo al Operador: " + operador.OperadorID);
-
-                long idPayment = 0;
-                long.TryParse(mercadoPago.Comprobante, out idPayment);
                 Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
                 Log.Info($"Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante {idPayment}.");
 
@@ -403,8 +403,6 @@ namespace StockNotifier
             MercadoPagoConfig.AccessToken = null;
             MercadoPagoConfig.AccessToken = operador.AccessToken;
 
-            long idPayment = 0;
-            long.TryParse(mercadoPago.Comprobante, out idPayment);
             Log.Info("Buscando comprobante " + mercadoPago.Comprobante + " en MP");
 
             Payment payment = null;
