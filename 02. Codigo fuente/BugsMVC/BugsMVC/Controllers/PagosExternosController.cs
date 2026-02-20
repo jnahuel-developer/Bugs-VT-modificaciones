@@ -74,19 +74,9 @@ namespace BugsMVC.Controllers
                     x.MercadoPagoId,
                     x.Monto,
                     x.Fecha,
-                    MaquinaNombreAlias = x.Maquina != null ? x.Maquina.NombreAlias : null,
                     MaquinaNumeroSerie = x.Maquina != null ? x.Maquina.NumeroSerie : null,
-                    MaquinaId = x.Maquina != null ? (Guid?)x.Maquina.MaquinaID : null,
                     IdCaja = x.Maquina.NotasService,
-                    LocacionNombre = x.Maquina != null && x.Maquina.Locacion != null ? x.Maquina.Locacion.Nombre : null,
-                    EstadoTransmisionDescripcion = x.MercadoPagoEstadoTransmision != null
-                        ? x.MercadoPagoEstadoTransmision.Descripcion
-                        : null,
-                    x.MercadoPagoEstadoTransmisionId,
-                    EstadoFinancieroDescripcion = x.MercadoPagoEstadoFinanciero != null
-                        ? x.MercadoPagoEstadoFinanciero.Descripcion
-                        : null,
-                    x.MercadoPagoEstadoFinancieroId
+                    LocacionNombre = x.Maquina != null && x.Maquina.Locacion != null ? x.Maquina.Locacion.Nombre : null
                 })
                 .ToList();
 
@@ -97,15 +87,9 @@ namespace BugsMVC.Controllers
                     : x.Comprobante,
                 monto = x.Monto,
                 fecha = DateTime.SpecifyKind(x.Fecha, DateTimeKind.Utc).ToString("o", CultureInfo.InvariantCulture),
-                maquina = !string.IsNullOrWhiteSpace(x.MaquinaNombreAlias)
-                    ? x.MaquinaNombreAlias
-                    : !string.IsNullOrWhiteSpace(x.MaquinaNumeroSerie)
-                        ? x.MaquinaNumeroSerie
-                        : x.MaquinaId?.ToString(),
+                maquina = x.MaquinaNumeroSerie,
                 id_caja = x.IdCaja,
-                locacion = x.LocacionNombre,
-                estadoTransmision = x.EstadoTransmisionDescripcion ?? x.MercadoPagoEstadoTransmisionId.ToString(),
-                estadoFinanciero = x.EstadoFinancieroDescripcion ?? x.MercadoPagoEstadoFinancieroId.ToString()
+                locacion = x.LocacionNombre
             }).ToList();
 
             return Json(new

@@ -361,10 +361,16 @@ namespace BugsMVC.Controllers
                                             operacionMixta.PaymentId2 = idComprobante;
                                         }
 
-                                        if (operacionMixta.ApprovedCount < 2)
+                                        if (!OperacionMixtaTieneDosPagosParcialesRegistrados(operacionMixta))
                                         {
                                             bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
                                             await bugsDbContext.SaveChangesAsync();
+                                            return;
+                                        }
+
+                                        if (!OperacionMixtaValidaParaEnvioMaquina(operacionMixta))
+                                        {
+                                            await CerrarPagoMixtoRechazadoOCancelado(bugsDbContext, operacionMixta, operador);
                                             return;
                                         }
 
@@ -463,6 +469,64 @@ namespace BugsMVC.Controllers
                                 Log.Info($"[{idComprobante}] - {mensajeDescripcion}");
                                 await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, operador, monto);
                             }
+                            return;
+                        }
+                        else if (EsEstadoPago(paymentStatus, "rejected") || EsEstadoPago(paymentStatus, "cancelled"))
+                        {
+                            Log.Info($"[{idComprobante}] - Mercado Pago status: {paymentStatus}");
+
+                            if (string.IsNullOrWhiteSpace(paymentExternalReference) || !PagosMixtosConfigHelper.PagosMixtosHabilitados)
+                            {
+                                return;
+                            }
+
+                            var operacionMixta = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, paymentExternalReference);
+                            if (operacionMixta == null)
+                            {
+                                return;
+                            }
+
+                            if (OperacionMixtaExpirada(operacionMixta))
+                            {
+                                await CerrarPagoMixtoInconsistente(bugsDbContext, operacionMixta, operador);
+                                return;
+                            }
+
+                            if (operacionMixta.ApprovedCount == 0 &&
+                                ((operacionMixta.PaymentId1 == 0 && !operacionMixta.PaymentId2.HasValue) ||
+                                 (operacionMixta.PaymentId2 == 0 && !operacionMixta.PaymentId1.HasValue)))
+                            {
+                                Log.Info($"[{idComprobante}] - Operación mixta ya tiene un pago parcial rechazado/cancelado registrado en 0 y sin aprobados. Se ignora el evento para evitar cierre prematuro. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}.");
+                                return;
+                            }
+
+                            string paymentIdCampoActualizado = null;
+                            if (!operacionMixta.PaymentId1.HasValue)
+                            {
+                                operacionMixta.PaymentId1 = 0;
+                                paymentIdCampoActualizado = nameof(operacionMixta.PaymentId1);
+                            }
+                            else if (!operacionMixta.PaymentId2.HasValue)
+                            {
+                                operacionMixta.PaymentId2 = 0;
+                                paymentIdCampoActualizado = nameof(operacionMixta.PaymentId2);
+                            }
+
+                            operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+
+                            if (paymentIdCampoActualizado != null)
+                            {
+                                Log.Info($"[{idComprobante}] - Registrando pago parcial rechazado/cancelado en 0. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}, CampoActualizado={paymentIdCampoActualizado}.");
+                            }
+
+                            if (!OperacionMixtaTieneDosPagosParcialesRegistrados(operacionMixta))
+                            {
+                                bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
+                                await bugsDbContext.SaveChangesAsync();
+                                return;
+                            }
+
+                            await CerrarPagoMixtoRechazadoOCancelado(bugsDbContext, operacionMixta, operador);
                             return;
                         }
                         else
@@ -675,16 +739,138 @@ namespace BugsMVC.Controllers
                 (x.PaymentId1 == idComprobante || x.PaymentId2 == idComprobante));
         }
 
+        private bool OperacionMixtaTieneDosPagosParcialesRegistrados(MercadoPagoOperacionMixta operacion)
+        {
+            return operacion.PaymentId1.HasValue && operacion.PaymentId2.HasValue;
+        }
+
+        private bool OperacionMixtaValidaParaEnvioMaquina(MercadoPagoOperacionMixta operacion)
+        {
+            return operacion.MontoAcumulado > 0 &&
+                operacion.PaymentId1.HasValue && operacion.PaymentId1.Value != 0 &&
+                operacion.PaymentId2.HasValue && operacion.PaymentId2.Value != 0;
+        }
+
+        private async Task<Maquina> ResolverMaquinaMixtaPorExternalReference(BugsContext bugsDbContext, MercadoPagoOperacionMixta operacion, Operador operador)
+        {
+            if (operador == null || string.IsNullOrWhiteSpace(operacion.ExternalReference))
+            {
+                return null;
+            }
+
+            return await bugsDbContext.Maquinas.FirstOrDefaultAsync(x =>
+                x.NotasService != null &&
+                x.NotasService == operacion.ExternalReference &&
+                x.OperadorID == operador.OperadorID);
+        }
+
+        private long? ObtenerPaymentIdComprobanteValido(MercadoPagoOperacionMixta operacion)
+        {
+            if (operacion.PaymentId1.HasValue && operacion.PaymentId1.Value > 0)
+            {
+                return operacion.PaymentId1.Value;
+            }
+
+            if (operacion.PaymentId2.HasValue && operacion.PaymentId2.Value > 0)
+            {
+                return operacion.PaymentId2.Value;
+            }
+
+            return null;
+        }
+
+        private async Task CerrarPagoMixtoRechazadoOCancelado(BugsContext bugsDbContext, MercadoPagoOperacionMixta operacion, Operador operador)
+        {
+            long? paymentIdComprobante = ObtenerPaymentIdComprobanteValido(operacion);
+
+            if (operacion.MontoAcumulado <= 0 || paymentIdComprobante == null)
+            {
+                Log.Info(
+                    "Cierre de pago mixto rechazado/cancelado sin impacto financiero: no se registra NO_PROCESABLE en MercadoPagoTable. " +
+                    $"MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, ExternalReference={operacion.ExternalReference}, OperadorId={operacion.OperadorId}, " +
+                    $"MontoAcumulado={operacion.MontoAcumulado}, PaymentId1={operacion.PaymentId1}, PaymentId2={operacion.PaymentId2}");
+            }
+            else
+            {
+                Maquina maquinaResuelta = await ResolverMaquinaMixtaPorExternalReference(bugsDbContext, operacion, operador);
+                bool usaFallbackMaquinaNula = maquinaResuelta == null;
+
+                Log.Info(
+                    $"[0] - Cierre de pago mixto rechazado/cancelado. Se insertará NO_PROCESABLE. MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, " +
+                    $"ExternalReference={operacion.ExternalReference}, PaymentId1={operacion.PaymentId1}, PaymentId2={operacion.PaymentId2}, PaymentIdComprobante={paymentIdComprobante}, " +
+                    $"MontoAcumulado={operacion.MontoAcumulado}, MaquinaIdResuelta={(maquinaResuelta != null ? maquinaResuelta.MaquinaID.ToString() : "null")}, UsaFallbackMaquinaNula={usaFallbackMaquinaNula}");
+
+                if (usaFallbackMaquinaNula)
+                {
+                    Log.Warn($"[0] - No se pudo resolver máquina para ExternalReference={operacion.ExternalReference} y OperadorId={operacion.OperadorId}. Se utilizará fallback de máquina nula.");
+                }
+
+                await GuardarNoProcesable(
+                    bugsDbContext,
+                    0,
+                    "Pago mixto rechazado o cancelado",
+                    operador,
+                    operacion.MontoAcumulado,
+                    null,
+                    paymentIdComprobante.ToString(),
+                    maquinaResuelta);
+            }
+
+            operacion.Cerrada = true;
+            operacion.FechaCierreUtc = DateTime.UtcNow;
+            operacion.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+            bugsDbContext.Entry(operacion).State = EntityState.Modified;
+            await bugsDbContext.SaveChangesAsync();
+        }
+
         private async Task CerrarPagoMixtoInconsistente(BugsContext bugsDbContext, MercadoPagoOperacionMixta operacion, Operador operador)
         {
-            await GuardarNoProcesable(
-                bugsDbContext,
-                0,
-                operacion.ExternalReference,
-                operador,
-                operacion.MontoAcumulado,
-                "Pago mixto inconsistente",
-                operacion.ExternalReference);
+            bool cierreSilencioso = operacion.MontoAcumulado == 0 ||
+                (operacion.PaymentId1 == null && operacion.PaymentId2 == null);
+
+            if (cierreSilencioso)
+            {
+                Log.Info(
+                    "Cierre por timeout de pago mixto sin impacto financiero: no se registra NO_PROCESABLE en MercadoPagoTable. " +
+                    $"MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, ExternalReference={operacion.ExternalReference}, OperadorId={operacion.OperadorId}, " +
+                    $"MontoAcumulado={operacion.MontoAcumulado}, ApprovedCount={operacion.ApprovedCount}, PaymentId1={operacion.PaymentId1}, PaymentId2={operacion.PaymentId2}");
+            }
+            else
+            {
+                long? paymentIdComprobante = ObtenerPaymentIdComprobanteValido(operacion);
+
+                if (paymentIdComprobante == null)
+                {
+                    Log.Warn(
+                        $"[0] - Timeout de pago mixto inconsistente sin paymentId para comprobante. MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, " +
+                        $"ExternalReference={operacion.ExternalReference}, OperadorId={operacion.OperadorId}");
+                }
+
+                Maquina maquinaResuelta = await ResolverMaquinaMixtaPorExternalReference(bugsDbContext, operacion, operador);
+
+                bool usaFallbackMaquinaNula = maquinaResuelta == null;
+
+                Log.Info(
+                    $"[0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId={operacion.MercadoPagoOperacionMixtaId}, " +
+                    $"ExternalReference={operacion.ExternalReference}, MontoAcumulado={operacion.MontoAcumulado}, ApprovedCount={operacion.ApprovedCount}, " +
+                    $"PaymentId1={operacion.PaymentId1}, PaymentId2={operacion.PaymentId2}, PaymentIdComprobante={paymentIdComprobante}, " +
+                    $"MaquinaIdResuelta={(maquinaResuelta != null ? maquinaResuelta.MaquinaID.ToString() : "null")}, UsaFallbackMaquinaNula={usaFallbackMaquinaNula}");
+
+                if (usaFallbackMaquinaNula)
+                {
+                    Log.Warn($"[0] - No se pudo resolver máquina para ExternalReference={operacion.ExternalReference} y OperadorId={operacion.OperadorId}. Se utilizará fallback de máquina nula.");
+                }
+
+                await GuardarNoProcesable(
+                    bugsDbContext,
+                    0,
+                    "Pago mixto inconsistente",
+                    operador,
+                    operacion.MontoAcumulado,
+                    null,
+                    paymentIdComprobante?.ToString(),
+                    maquinaResuelta);
+            }
 
             operacion.Cerrada = true;
             operacion.FechaCierreUtc = DateTime.UtcNow;
@@ -737,18 +923,18 @@ namespace BugsMVC.Controllers
         /// <param name="operador">Operador asociado al pago (puede ser nulo).</param>
         /// <param name="monto">Monto del pago (opcional).</param>
         /// <returns>True si el registro fue guardado correctamente, false en caso de error.</returns>
-        private async Task<Boolean> GuardarNoProcesable(BugsContext bugsDbContext, long idComprobante, string descripcion, Operador operador, decimal monto = 0, string detalleUrlDevolucion = null, string comprobanteOverride = null)
+        private async Task<Boolean> GuardarNoProcesable(BugsContext bugsDbContext, long idComprobante, string descripcion, Operador operador, decimal monto = 0, string detalleUrlDevolucion = null, string comprobanteOverride = null, Maquina maquinaOverride = null)
         {
             Log.Info($"[{idComprobante}] - Registrando caso no procesable. Operador: {(operador != null ? operador.OperadorID.ToString() : "null")} - Monto: {monto}");
 
             Boolean result = true;
 
-            Maquina maquina = null;
-            if (operador != null)
+            Maquina maquina = maquinaOverride;
+            if (maquina == null && operador != null)
             {
                 maquina = await bugsDbContext.Maquinas.FirstOrDefaultAsync(x => x.NotasService == MAQUINA_NULA && x.Operador.OperadorID == operador.OperadorID);
             }
-            else
+            else if (operador == null)
             {
                 Log.Error($"[{idComprobante}] - No se proporcionó un operador correcto para registrar el caso no procesable.");
             }
