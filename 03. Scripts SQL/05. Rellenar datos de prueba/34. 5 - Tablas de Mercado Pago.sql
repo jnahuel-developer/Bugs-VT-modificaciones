@@ -82,16 +82,16 @@ DECLARE @Pagos TABLE
 );
 
 INSERT INTO @Pagos VALUES
-('MP-TEST-0001', '2025-12-05T10:00:00',  150.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, N'Novax_71',        N'MP', 0),
-('MP-TEST-0002', '2025-12-06T11:00:00',  210.50, @OperadorDarioId,  @MaquinaDevId, 2, 1, N'Cozzuol_001116',   N'MP', 0),
-('MP-TEST-0003', '2025-12-07T12:00:00',  320.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, N'External_Ref_003', N'MP', 0),
-('MP-TEST-0004', '2025-12-08T13:00:00',   80.00, @OperadorErnestoId, NULL,         2, 2, N'ExtRef_004',       N'MP', 0),
-('MP-TEST-0005', '2025-12-09T14:00:00',  999.99, @OperadorErnestoId, NULL,         3, 4, N'ExtRef_005',       N'MP', 1),
-('MP-TEST-0006', '2025-12-10T15:00:00',   45.30, @OperadorDarioId,  @MaquinaDevId, 1, 3, N'ExtRef_006',       N'MP', 0),
-('MP-TEST-0007', '2025-12-11T16:00:00',  560.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, N'ExtRef_007',       N'MP', 0),
-('MP-TEST-0008', '2025-12-12T17:00:00',   75.00, @OperadorDarioId,  @MaquinaDevId, 4, 5, N'ExtRef_008',       N'MP', 0),
-('MP-TEST-0009', '2025-12-13T18:00:00',  130.10, @OperadorErnestoId, NULL,         2, 2, N'ExtRef_009',       N'MP', 0),
-('MP-TEST-0010', '2025-12-14T19:00:00',  220.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, N'ExtRef_010',       N'MP', 0);
+('MP-TEST-0001', '2025-12-05T10:00:00',  150.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, NULL, N'MP', 0),
+('MP-TEST-0002', '2025-12-06T11:00:00',  210.50, @OperadorDarioId,  @MaquinaDevId, 2, 1, NULL, N'MP', 0),
+('MP-TEST-0003', '2025-12-07T12:00:00',  320.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, NULL, N'MP', 0),
+('MP-TEST-0004', '2025-12-08T13:00:00',   80.00, @OperadorErnestoId, NULL,         2, 2, NULL, N'MP', 0),
+('MP-TEST-0005', '2025-12-09T14:00:00',  999.99, @OperadorErnestoId, NULL,         3, 4, NULL, N'MP', 1),
+('MP-TEST-0006', '2025-12-10T15:00:00',   45.30, @OperadorDarioId,  @MaquinaDevId, 1, 3, NULL, N'MP', 0),
+('MP-TEST-0007', '2025-12-11T16:00:00',  560.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, NULL, N'MP', 0),
+('MP-TEST-0008', '2025-12-12T17:00:00',   75.00, @OperadorDarioId,  @MaquinaDevId, 4, 5, NULL, N'MP', 0),
+('MP-TEST-0009', '2025-12-13T18:00:00',  130.10, @OperadorErnestoId, NULL,         2, 2, NULL, N'MP', 0),
+('MP-TEST-0010', '2025-12-14T19:00:00',  220.00, @OperadorDarioId,  @MaquinaDevId, 2, 2, NULL, N'MP', 0);
 
 INSERT INTO MercadoPagoTable
 (
