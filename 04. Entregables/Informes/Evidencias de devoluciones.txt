@@ -1,0 +1,184 @@
+************************************************* */
+
+Secuencia de las operaciones
+
+/* - Casos de pagos simples Ok - */
+
+1) Pago simple -> Ok (Operación 1 en MercadoPagoId)
+	Registra en operaciones de Mercado Pago y envía el crédito a la máquina
+
+/* - Casos de pagos mixtos Ok - */
+
+2) Pago mixto 1 - 1 - 2 -> Ok (Operación 1 en MercadoPagoOperacionMixtaId / Operación 2 en MercadoPagoId)
+	Llega el Authorized, luego el approved de ese ID, y cierra el otro ID
+	Registra en operaciones de Mercado Pago y envía el crédito a la máquina
+3) Pago mixto 1 - 2 - 1 -> Ok (Operación 2 en MercadoPagoOperacionMixtaId / Operación 3 en MercadoPagoId)
+	Llega el Authorized, luego el approved del otro ID, y cierra el ID original
+	Registra en operaciones de Mercado Pago y envía el crédito a la máquina
+
+/* - Casos de pagos mixtos incompletos - */
+
+4) Pago mixto 1 - 2 - x -> Ok (Operación 3 en MercadoPagoOperacionMixtaId / Operación 4 en MercadoPagoId)
+	Llega el authorized, luego el approved del otro ID, y se cierra por timeout expirado cuando llega un pago simple (Operación 5 en MercadoPagoId)
+	Registra como NO PROCESABLE, con sólo 1 ID en pagos mixtos
+5) Pago mixto 1 - 1 - x -> Ok (Operación 4 en MercadoPagoOperacionMixtaId / Operación 6 en MercadoPagoId)
+	Llega el authorized, luego el approved del mismo ID, y se cierra por timeout expirado cuando llega un pago simple (Operación 7 en MercadoPagoId)
+	Registra como NO PROCESABLE, con sólo 1 ID en pagos mixtos
+6) Pago mixto 1 - x - x -> Ok (Operación 5 en MercadoPagoOperacionMixtaId )
+	Llega el authorized, y se cierra por timeout expirado cuando llega un pago simple (Operación 8 en MercadoPagoId)
+	No se registra la operación, ya que no se fondeó dinero
+
+/* - Casos de pagos mixtos con rechazados o cancelados - */
+
+7) Pago mixto rechazado 1 - 1 - 2 -> Ok (Operación 6 en MercadoPagoOperacionMixtaId / Operación 9 en MercadoPagoId)
+	Llega el Authorized, luego el approved de ese ID, y cierra el otro ID que viene rechazado
+	Registra como NO PROCESABLE, con 1 ID en pagos mixtos y otro en cero, con el monto total del ID válido
+8) Pago mixto cancelado 1 - 2 - 1 -> Ok (Operación 7 en MercadoPagoOperacionMixtaId / Operación 10 en MercadoPagoId)
+	Llega el Authorized, luego el ID cancelado, y cierra el ID inicial que viene aprobado
+	Registra como NO PROCESABLE, con 1 ID en pagos mixtos y otro en cero, con el monto total del ID válido
+9) Pago mixto rechazado 1 - 2 - x -> Ok (Operación 8 en MercadoPagoOperacionMixtaId)
+	Llega el Authorized, luego el otro ID que viene rechazado, y se cierra por timeout expirado cuando llega un pago simple (Operación 11 en MercadoPagoId)
+	No se registra la operación, ya que no se fondeó dinero
+
+/* **************************************************************************************************************** */
+
+Logueo del proyecto:
+
+2026-02-19 22:57:48,204 - INFO - Se resolvió la configuración 'Ambiente:Desarrollo' con valor efectivo: OFF.
+2026-02-19 22:57:48,209 - INFO - Se resolvió la configuración 'Ambiente:Simuladores' con valor efectivo: ON.
+2026-02-19 22:57:48,209 - INFO - Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: ON.
+2026-02-19 22:57:48,209 - INFO - Configuración: Pagos mixtos habilitados = True.
+2026-02-19 22:57:48,209 - INFO - Configuración: Ambiente de desarrollo habilitado = False.
+2026-02-19 22:57:48,209 - INFO - Configuración: Ambiente de simuladores habilitado = True.
+2026-02-19 22:57:50,262 - INFO - --------------------------------------------------------------------------------
+2026-02-19 22:57:50,262 - INFO - Control de stock
+2026-02-19 22:57:50,319 - INFO - Control Maquinas Conectadas
+2026-02-19 22:57:50,319 - INFO - Control Devoluciones
+2026-02-19 22:57:50,343 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,372 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550060427.
+2026-02-19 22:57:50,394 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550060427.
+2026-02-19 22:57:50,588 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,589 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550074650.
+2026-02-19 22:57:50,592 - INFO - Pago asociado a operación mixta (MercadoPagoOperacionMixtaId=1): se devolverán comprobantes 1771550074650 y 1771550074649.
+2026-02-19 22:57:50,592 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550074650.
+2026-02-19 22:57:50,619 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,620 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550098414.
+2026-02-19 22:57:50,621 - INFO - Pago asociado a operación mixta (MercadoPagoOperacionMixtaId=2): se devolverán comprobantes 1771550098414 y 1771550098415.
+2026-02-19 22:57:50,621 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550098414.
+2026-02-19 22:57:50,679 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,680 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550143530.
+2026-02-19 22:57:50,681 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550143530.
+2026-02-19 22:57:50,697 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,698 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550181477.
+2026-02-19 22:57:50,699 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550181477.
+2026-02-19 22:57:50,727 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,728 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550223244.
+2026-02-19 22:57:50,729 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550223244.
+2026-02-19 22:57:50,756 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,757 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 1771550341836.
+2026-02-19 22:57:50,758 - INFO - Ambiente simuladores habilitado: solicitando refund en mp_simulator para comprobante 1771550341836.
+2026-02-19 22:57:50,774 - INFO - Control Devoluciones NO PROCESABLES
+2026-02-19 22:57:50,777 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,781 - INFO - MercadoPagoId=4: operación mixta detectada (MercadoPagoOperacionMixtaId=3) sin par válido para devolución.
+2026-02-19 22:57:50,781 - INFO - MercadoPagoId=4: IDs a devolver => 1771550124331.
+2026-02-19 22:57:50,818 - INFO - MercadoPagoId=4: resultado devolución comprobante 1771550124331 => confirmado.
+2026-02-19 22:57:50,822 - INFO - MercadoPagoId=4: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-19 22:57:50,822 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,824 - INFO - MercadoPagoId=6: operación mixta detectada (MercadoPagoOperacionMixtaId=4) sin par válido para devolución.
+2026-02-19 22:57:50,824 - INFO - MercadoPagoId=6: IDs a devolver => 1771550160353.
+2026-02-19 22:57:50,835 - INFO - MercadoPagoId=6: resultado devolución comprobante 1771550160353 => confirmado.
+2026-02-19 22:57:50,837 - INFO - MercadoPagoId=6: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-19 22:57:50,837 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,843 - INFO - MercadoPagoId=9: operación mixta detectada (MercadoPagoOperacionMixtaId=6) sin par válido para devolución.
+2026-02-19 22:57:50,843 - INFO - MercadoPagoId=9: IDs a devolver => 1771550250732.
+2026-02-19 22:57:50,853 - INFO - MercadoPagoId=9: resultado devolución comprobante 1771550250732 => confirmado.
+2026-02-19 22:57:50,855 - INFO - MercadoPagoId=9: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-19 22:57:50,855 - INFO - Maquina:88888888-8888-8888-8888-888888888888
+2026-02-19 22:57:50,857 - INFO - MercadoPagoId=10: operación mixta detectada (MercadoPagoOperacionMixtaId=7) sin par válido para devolución.
+2026-02-19 22:57:50,857 - INFO - MercadoPagoId=10: IDs a devolver => 1771550283783.
+2026-02-19 22:57:50,868 - INFO - MercadoPagoId=10: resultado devolución comprobante 1771550283783 => confirmado.
+2026-02-19 22:57:50,870 - INFO - MercadoPagoId=10: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+
+/* **************************************************************************************************************** */
+
+Logueo del simulador de Mercado Pago
+
+[2026-02-20T01:57:50.438939Z] 127.0.0.1 - "GET /v1/payments/1771550060427 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.459370Z] next_refund_mode consumed by payment_id=1771550060427: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-19T21:54:03.617904Z'}
+[2026-02-20T01:57:50.462984Z] 127.0.0.1 - "POST /v1/payments/1771550060427/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.465701Z] 127.0.0.1 - "GET /v1/payments/1771550060427 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.596841Z] 127.0.0.1 - "GET /v1/payments/1771550074650 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.599964Z] next_refund_mode consumed by payment_id=1771550074650: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.457628Z'}
+[2026-02-20T01:57:50.603355Z] 127.0.0.1 - "POST /v1/payments/1771550074650/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.606398Z] 127.0.0.1 - "GET /v1/payments/1771550074650 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.612344Z] next_refund_mode consumed by payment_id=1771550074649: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.598049Z'}
+[2026-02-20T01:57:50.616468Z] 127.0.0.1 - "POST /v1/payments/1771550074649/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.619699Z] 127.0.0.1 - "GET /v1/payments/1771550074649 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.625097Z] 127.0.0.1 - "GET /v1/payments/1771550098414 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.628624Z] next_refund_mode consumed by payment_id=1771550098414: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.610439Z'}
+[2026-02-20T01:57:50.660440Z] 127.0.0.1 - "POST /v1/payments/1771550098414/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.663745Z] 127.0.0.1 - "GET /v1/payments/1771550098414 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.670317Z] next_refund_mode consumed by payment_id=1771550098415: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.626615Z'}
+[2026-02-20T01:57:50.675093Z] 127.0.0.1 - "POST /v1/payments/1771550098415/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.679531Z] 127.0.0.1 - "GET /v1/payments/1771550098415 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.685785Z] 127.0.0.1 - "GET /v1/payments/1771550143530 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.688783Z] next_refund_mode consumed by payment_id=1771550143530: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.668125Z'}
+[2026-02-20T01:57:50.692941Z] 127.0.0.1 - "POST /v1/payments/1771550143530/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.696112Z] 127.0.0.1 - "GET /v1/payments/1771550143530 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.703859Z] 127.0.0.1 - "GET /v1/payments/1771550181477 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.714481Z] next_refund_mode consumed by payment_id=1771550181477: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.687161Z'}
+[2026-02-20T01:57:50.717952Z] 127.0.0.1 - "POST /v1/payments/1771550181477/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.726011Z] 127.0.0.1 - "GET /v1/payments/1771550181477 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.733500Z] 127.0.0.1 - "GET /v1/payments/1771550223244 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.748190Z] next_refund_mode consumed by payment_id=1771550223244: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.705270Z'}
+[2026-02-20T01:57:50.752180Z] 127.0.0.1 - "POST /v1/payments/1771550223244/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.755139Z] 127.0.0.1 - "GET /v1/payments/1771550223244 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.762157Z] 127.0.0.1 - "GET /v1/payments/1771550341836 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.765715Z] next_refund_mode consumed by payment_id=1771550341836: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.734641Z'}
+[2026-02-20T01:57:50.769416Z] 127.0.0.1 - "POST /v1/payments/1771550341836/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.772678Z] 127.0.0.1 - "GET /v1/payments/1771550341836 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.784852Z] next_refund_mode consumed by payment_id=1771550124331: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.763716Z'}
+[2026-02-20T01:57:50.814975Z] 127.0.0.1 - "POST /v1/payments/1771550124331/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.818217Z] 127.0.0.1 - "GET /v1/payments/1771550124331 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.828100Z] next_refund_mode consumed by payment_id=1771550160353: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.783150Z'}
+[2026-02-20T01:57:50.832480Z] 127.0.0.1 - "POST /v1/payments/1771550160353/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.835389Z] 127.0.0.1 - "GET /v1/payments/1771550160353 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.847105Z] next_refund_mode consumed by payment_id=1771550250732: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.826093Z'}
+[2026-02-20T01:57:50.850651Z] 127.0.0.1 - "POST /v1/payments/1771550250732/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.853828Z] 127.0.0.1 - "GET /v1/payments/1771550250732 HTTP/1.1" 200 -
+[2026-02-20T01:57:50.860990Z] next_refund_mode consumed by payment_id=1771550283783: {'mode': 'ok', 'delay_seconds': 0, 'set_at': '2026-02-20T01:57:50.845120Z'}
+[2026-02-20T01:57:50.865063Z] 127.0.0.1 - "POST /v1/payments/1771550283783/refunds HTTP/1.1" 200 -
+[2026-02-20T01:57:50.868370Z] 127.0.0.1 - "GET /v1/payments/1771550283783 HTTP/1.1" 200 -
+
+/* **************************************************************************************************************** */
+
+Tabla de operaciones de Mercado Pago luego de todas las operaciones
+
+MercadoPagoId	Fecha						Monto		MaquinaId								OperadorId								MercadoPagoEstadoFinancieroId	MercadoPagoEstadoTransmisionId		Comprobante		Descripcion							UrlDevolucion
+11				2026-02-19 22:19:05.587		150.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550341836	NULL								NULL
+10				2026-02-19 22:18:15.973		7531.29		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550283783	Pago mixto rechazado o cancelado	NULL
+9				2026-02-19 22:17:40.750		1915.25		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550250732	Pago mixto rechazado o cancelado	NULL
+8				2026-02-19 22:17:08.897		150.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550223244	NULL								NULL
+7				2026-02-19 22:16:25.903		150.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550181477	NULL								NULL
+6				2026-02-19 22:16:25.883		4589.15		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550160353	Pago mixto inconsistente			NULL
+5				2026-02-19 22:15:48.880		150.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550143530	NULL								NULL
+4				2026-02-19 22:15:48.857		910.85		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550124331	Pago mixto inconsistente			NULL
+3				2026-02-19 22:15:10.973		5500.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550098414	NULL								NULL
+2				2026-02-19 22:14:45.753		5500.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550074650	NULL								NULL
+1				2026-02-19 22:14:25.177		150.00		88888888-8888-8888-8888-888888888888	11111111-1111-1111-1111-111111111111	1								4									1771550060427	NULL								NULL
+
+/* **************************************************************************************************************** */
+
+Tabla de operaciones de Pagos Mixtos luego de todas las operaciones
+
+MercadoPagoOperacionMixtaId		OperadorId								ExternalReference	FechaAuthorizedUtc			MontoAcumulado	ApprovedCount	PaymentId1		PaymentId2		Cerrada		FechaCierreUtc				FechaUltimaActualizacionUtc
+8								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:18:39.273		0.00			0				0				NULL			1			2026-02-20 01:19:05.563		2026-02-20 01:19:05.563
+7								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:18:09.337		7531.29			1				0				1771550283783	1			2026-02-20 01:18:15.980		2026-02-20 01:18:15.980
+6								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:17:35.150		1915.25			1				1771550250732	0				1			2026-02-20 01:17:40.757		2026-02-20 01:17:40.757
+5								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:16:42.967		0.00			0				NULL			NULL			1			2026-02-20 01:17:08.873		2026-02-20 01:17:08.873
+4								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:16:03.790		4589.15			1				1771550160353	NULL			1			2026-02-20 01:16:25.883		2026-02-20 01:16:25.883
+3								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:15:27.953		910.85			1				1771550124331	NULL			1			2026-02-20 01:15:48.860		2026-02-20 01:15:48.860
+2								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:15:01.763		5500.00			2				1771550098415	1771550098414	1			2026-02-20 01:15:10.973		2026-02-20 01:15:10.973
+1								11111111-1111-1111-1111-111111111111	BGSQR_0001			2026-02-20 01:14:39.567		5500.00			2				1771550074649	1771550074650	1			2026-02-20 01:14:45.757		2026-02-20 01:14:45.757
+
+/* **************************************************************************************************************** */

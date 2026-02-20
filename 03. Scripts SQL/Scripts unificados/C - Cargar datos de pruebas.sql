@@ -657,73 +657,7 @@ IF NOT EXISTS (SELECT 1 FROM MercadoPagoEstadoTransmision WHERE Descripcion = N'
 IF NOT EXISTS (SELECT 1 FROM MercadoPagoEstadoTransmision WHERE Descripcion = N'NO_PROCESABLE')
     INSERT INTO MercadoPagoEstadoTransmision (Descripcion) VALUES (N'NO_PROCESABLE');
 
-SELECT TOP 1 @EstadoFinAcreditadoId = Id
-FROM MercadoPagoEstadoFinanciero
-WHERE Descripcion = N'ACREDITADO'
-ORDER BY Id;
 
-SELECT TOP 1 @EstadoTxTerminadoOkId = Id
-FROM MercadoPagoEstadoTransmision
-WHERE Descripcion = N'TERMINADO_OK'
-ORDER BY Id;
-
-IF NOT EXISTS (
-    SELECT 1
-    FROM MercadoPagoOperacionMixta
-    WHERE OperadorId = @OperadorDarioId
-      AND ExternalReference = N'BGSQR_0002'
-)
-BEGIN
-    INSERT INTO MercadoPagoOperacionMixta
-        (OperadorId, ExternalReference, FechaAuthorizedUtc, MontoAcumulado, ApprovedCount, PaymentId1, PaymentId2, Cerrada, FechaCierreUtc, FechaUltimaActualizacionUtc)
-    VALUES
-        (@OperadorDarioId, N'BGSQR_0002', DATEADD(MINUTE,-40,GETUTCDATE()), 500.00, 2, 91000001, 91000002, 1, DATEADD(MINUTE,-35,GETUTCDATE()), DATEADD(MINUTE,-35,GETUTCDATE()));
-END
-
-IF NOT EXISTS (
-    SELECT 1
-    FROM MercadoPagoOperacionMixta
-    WHERE OperadorId = @OperadorErnestoId
-      AND ExternalReference = N'BGSQR_0003'
-)
-BEGIN
-    INSERT INTO MercadoPagoOperacionMixta
-        (OperadorId, ExternalReference, FechaAuthorizedUtc, MontoAcumulado, ApprovedCount, PaymentId1, PaymentId2, Cerrada, FechaCierreUtc, FechaUltimaActualizacionUtc)
-    VALUES
-        (@OperadorErnestoId, N'BGSQR_0003', DATEADD(MINUTE,-8,GETUTCDATE()), 260.00, 1, 92000001, NULL, 0, NULL, DATEADD(MINUTE,-3,GETUTCDATE()));
-END
-
-IF NOT EXISTS (
-    SELECT 1
-    FROM MercadoPagoTable
-    WHERE OperadorId = @OperadorDarioId
-      AND MaquinaId = @Maquina1Id
-      AND Comprobante = N'MP-SIMPLE-0001'
-)
-BEGIN
-    INSERT INTO MercadoPagoTable
-        (Fecha, Monto, MaquinaId, MercadoPagoEstadoFinancieroId, MercadoPagoEstadoTransmisionId,
-         OperadorId, Comprobante, Descripcion, FechaModificacionEstadoTransmision, Entidad, UrlDevolucion, Reintentos)
-    VALUES
-        (DATEADD(HOUR,-6,GETDATE()), 350.00, @Maquina1Id, @EstadoFinAcreditadoId, @EstadoTxTerminadoOkId,
-         @OperadorDarioId, N'MP-SIMPLE-0001', N'BGSQR_0001', GETDATE(), N'MP', NULL, 0);
-END
-
-IF NOT EXISTS (
-    SELECT 1
-    FROM MercadoPagoTable
-    WHERE OperadorId = @OperadorDarioId
-      AND MaquinaId = @Maquina2Id
-      AND Comprobante = N'MP-MIXTO-CONSOL-0001'
-)
-BEGIN
-    INSERT INTO MercadoPagoTable
-        (Fecha, Monto, MaquinaId, MercadoPagoEstadoFinancieroId, MercadoPagoEstadoTransmisionId,
-         OperadorId, Comprobante, Descripcion, FechaModificacionEstadoTransmision, Entidad, UrlDevolucion, Reintentos)
-    VALUES
-        (DATEADD(HOUR,-2,GETDATE()), 500.00, @Maquina2Id, @EstadoFinAcreditadoId, @EstadoTxTerminadoOkId,
-         @OperadorDarioId, N'MP-MIXTO-CONSOL-0001', N'BGSQR_0002', GETDATE(), N'MP', NULL, 0);
-END
 
 PRINT 'Carga de pruebas finalizada correctamente.';
 PRINT 'Operadores para SCOPED: 11111111-1111-1111-1111-111111111111 | 22222222-2222-2222-2222-222222222222';

@@ -1,37 +1,37 @@
 /* *************** Casos de pagos simples Ok *************** */
 
-1) Pago simple -> Ok (Operación 2032 en MercadoPagoId)
+1) Pago simple -> Ok (Operación 1 en MercadoPagoId)
 	Registra en operaciones de Mercado Pago y envía el crédito a la máquina
 
 /* *************** Casos de pagos mixtos Ok *************** */
 
-2) Pago mixto 1 - 1 - 2 -> Ok (Operación 2023 en MercadoPagoOperacionMixtaId / Operación 2033 en MercadoPagoId)
+2) Pago mixto 1 - 1 - 2 -> Ok (Operación 1 en MercadoPagoOperacionMixtaId / Operación 2 en MercadoPagoId)
 	Llega el Authorized, luego el approved de ese ID, y cierra el otro ID
 	Registra en operaciones de Mercado Pago y envía el crédito a la máquina
-3) Pago mixto 1 - 2 - 1 -> Ok (Operación 2024 en MercadoPagoOperacionMixtaId / Operación 2034 en MercadoPagoId)
+3) Pago mixto 1 - 2 - 1 -> Ok (Operación 2 en MercadoPagoOperacionMixtaId / Operación 3 en MercadoPagoId)
 	Llega el Authorized, luego el approved del otro ID, y cierra el ID original
 	Registra en operaciones de Mercado Pago y envía el crédito a la máquina
 
 /* *************** Casos de pagos mixtos incompletos *************** */
 
-4) Pago mixto 1 - 2 - x -> Ok (Operación 2025 en MercadoPagoOperacionMixtaId / Operación 2035 en MercadoPagoId)
-	Llega el authorized, luego el approved del otro ID, y se cierra por timeout expirado cuando llega un pago simple (Operación 2036 en MercadoPagoId)
+4) Pago mixto 1 - 2 - x -> Ok (Operación 3 en MercadoPagoOperacionMixtaId / Operación 4 en MercadoPagoId)
+	Llega el authorized, luego el approved del otro ID, y se cierra por timeout expirado cuando llega un pago simple (Operación 5 en MercadoPagoId)
 	Registra como NO PROCESABLE, con sólo 1 ID en pagos mixtos
-5) Pago mixto 1 - 1 - x -> Ok (Operación 2026 en MercadoPagoOperacionMixtaId / Operación 2037 en MercadoPagoId)
-	Llega el authorized, luego el approved del mismo ID, y se cierra por timeout expirado cuando llega un pago simple (Operación 2038 en MercadoPagoId)
+5) Pago mixto 1 - 1 - x -> Ok (Operación 4 en MercadoPagoOperacionMixtaId / Operación 6 en MercadoPagoId)
+	Llega el authorized, luego el approved del mismo ID, y se cierra por timeout expirado cuando llega un pago simple (Operación 7 en MercadoPagoId)
 	Registra como NO PROCESABLE, con sólo 1 ID en pagos mixtos
-6) Pago mixto 1 - x - x -> Ok (Operación 2027 en MercadoPagoOperacionMixtaId )
-	Llega el authorized, y se cierra por timeout expirado cuando llega un pago simple (Operación 2039 en MercadoPagoId)
+6) Pago mixto 1 - x - x -> Ok (Operación 5 en MercadoPagoOperacionMixtaId )
+	Llega el authorized, y se cierra por timeout expirado cuando llega un pago simple (Operación 8 en MercadoPagoId)
 	No se registra la operación, ya que no se fondeó dinero
 
 /* *************** Casos de pagos mixtos con rechazados o cancelados *************** */
 
-7) Pago mixto rechazado 1 - 1 - 2 -> Ok (Operación 2028 en MercadoPagoOperacionMixtaId / Operación 2040 en MercadoPagoId)
+7) Pago mixto rechazado 1 - 1 - 2 -> Ok (Operación 6 en MercadoPagoOperacionMixtaId / Operación 9 en MercadoPagoId)
 	Llega el Authorized, luego el approved de ese ID, y cierra el otro ID que viene rechazado
 	Registra como NO PROCESABLE, con 1 ID en pagos mixtos y otro en cero, con el monto total del ID válido
-8) Pago mixto rechazado 1 - 2 - 1 -> Ok (Operación 2029 en MercadoPagoOperacionMixtaId / Operación 2041 en MercadoPagoId)
-	Llega el Authorized, luego el ID rechazado, y cierra el ID inicial que viene aprobado
+8) Pago mixto cancelado 1 - 2 - 1 -> Ok (Operación 7 en MercadoPagoOperacionMixtaId / Operación 10 en MercadoPagoId)
+	Llega el Authorized, luego el ID cancelado, y cierra el ID inicial que viene aprobado
 	Registra como NO PROCESABLE, con 1 ID en pagos mixtos y otro en cero, con el monto total del ID válido
-9) Pago mixto rechazado 1 - 2 - x -> Ok (Operación 2030 en MercadoPagoOperacionMixtaId)
-	Llega el Authorized, luego el otro ID que viene rechazado, y se cierra por timeout expirado cuando llega un pago simple (Operación 2042 en MercadoPagoId)
+9) Pago mixto rechazado 1 - 2 - x -> Ok (Operación 8 en MercadoPagoOperacionMixtaId)
+	Llega el Authorized, luego el otro ID que viene rechazado, y se cierra por timeout expirado cuando llega un pago simple (Operación 11 en MercadoPagoId)
 	No se registra la operación, ya que no se fondeó dinero
