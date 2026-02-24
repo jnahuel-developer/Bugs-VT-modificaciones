@@ -199,11 +199,12 @@ namespace StockNotifier
 
                 if (PagosMixtosConfigHelper.PagosMixtosHabilitados)
                 {
-                    Log.Info("Control Devoluciones NO PROCESABLES");
+                    Log.Info("Control Devoluciones - Pagos mixtos incompletos");
 
                     var mercadoPagosNoProcesables = mercadoPagos
                         .Where(x => x.MercadoPagoEstadoFinancieroId == (int)MercadoPagoEstadoFinanciero.States.NO_PROCESABLE)
                         .Where(x => x.MercadoPagoEstadoTransmisionId == (int)MercadoPagoEstadoTransmision.States.NO_PROCESABLE)
+                        .Where(x => x.Descripcion == "Pago mixto rechazado o cancelado" || x.Descripcion == "Pago mixto inconsistente")
                         .AsEnumerable()
                         .Where(x =>
                                 (
