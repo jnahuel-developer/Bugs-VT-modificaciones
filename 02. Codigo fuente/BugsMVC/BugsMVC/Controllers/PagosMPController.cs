@@ -31,6 +31,31 @@ namespace BugsMVC.Controllers
     {
         private static readonly log4net.ILog Log =
             log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static bool DevLogs => AmbienteConfigHelper.AmbienteDesarrolloHabilitado;
+
+        private static void DevInfo(string msg)
+        {
+            if (DevLogs)
+            {
+                Log.Info(msg);
+            }
+        }
+
+        private static void DevWarn(string msg)
+        {
+            if (DevLogs)
+            {
+                Log.Warn(msg);
+            }
+        }
+
+        private static void DevError(string msg)
+        {
+            if (DevLogs)
+            {
+                Log.Error(msg);
+            }
+        }
         private string ip
         {
             get
@@ -112,6 +137,11 @@ namespace BugsMVC.Controllers
         public async Task<ActionResult> Index(long? operador, string topic, long id)
         {
             _userManager = Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            string version = ConfigurationManager.AppSettings["AppVersion"];
+
+            DevInfo($"DEV | IPN recibida | topic={topic} | id={id} | operador={operador} | version={version}");
+            DevInfo($"DEV | AmbienteSimuladoresHabilitado={AmbienteConfigHelper.AmbienteSimuladoresHabilitado}");
+            DevInfo($"DEV | PagosMixtosHabilitados={PagosMixtosConfigHelper.PagosMixtosHabilitados}");
 
             //Esto no se ejecuta de forma asíncrona, ya que necesitamos retornar el OK a MP para que no continúe enviando notificaciones.
             Task.Run(() => RegistrarPago(topic, id, operador));
@@ -129,7 +159,12 @@ namespace BugsMVC.Controllers
         public async Task RegistrarPago(string topic, long idComprobante, long? numeroOperador)
         {
             try
-            {                
+            {
+                string version = ConfigurationManager.AppSettings["AppVersion"];
+                DevInfo($"DEV | IPN recibida | topic={topic} | id={idComprobante} | operador={numeroOperador} | version={version}");
+                DevInfo($"DEV | AmbienteSimuladoresHabilitado={AmbienteConfigHelper.AmbienteSimuladoresHabilitado}");
+                DevInfo($"DEV | PagosMixtosHabilitados={PagosMixtosConfigHelper.PagosMixtosHabilitados}");
+
                 using (var bugsDbContext = new BugsContext())
                 {
 
@@ -141,6 +176,7 @@ namespace BugsMVC.Controllers
                         string mensajeDescripcion = "El id de operador es nulo.";
 
                         Log.Info($"[{idComprobante}] - No existe el operador número: {numeroOperador}");
+                        DevWarn($"DEV | Operador inválido | motivo=numeroOperador nulo | operadorNumero={numeroOperador} | id={idComprobante}");
                         //En este caso se debe guardar el operador nulo, ya que no existe uno. Lo mismo para la máquina, no podemos obtener el dato si no tenemos el operador.
                         await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, opNulo);
                         return;
@@ -155,6 +191,7 @@ namespace BugsMVC.Controllers
                         string mensajeDescripcion = $"El operador {numeroOperador} no existe en la DB.";
 
                         Log.Info($"[{idComprobante}] - {mensajeDescripcion}");
+                        DevWarn($"DEV | Operador inválido | motivo=operador inexistente | operadorNumero={numeroOperador} | id={idComprobante}");
                         await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, opNulo);
                         return;
                     }
@@ -167,12 +204,15 @@ namespace BugsMVC.Controllers
                         string mensajeDescripcion = $"El access token del operador número: {numeroOperador} no está registrado.";
 
                         Log.Info($"[{idComprobante}] - {mensajeDescripcion}");
+                        DevWarn($"DEV | Operador inválido | motivo=accessToken nulo | operadorNumero={numeroOperador} | id={idComprobante}");
                         await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, operador);
 
                         return;
                     }
 
                     #endregion
+
+                    DevInfo($"DEV | Operador resuelto | OperadorId={operador.OperadorID} | Numero={operador.Numero} | Nombre={operador.Nombre} | id={idComprobante}");
 
                     MercadoPagoConfig.AccessToken = null;
                     MercadoPagoConfig.AccessToken = accessToken;
@@ -184,8 +224,6 @@ namespace BugsMVC.Controllers
                             await ProcesarPendientesMixtosExpirados(bugsDbContext, operador);
                         }
 
-                        string version = ConfigurationManager.AppSettings["AppVersion"];
-
                         Log.Info($"Llega notificacion de pago al sistema: topic= {topic}, id= {idComprobante}, operador={numeroOperador}, version={version}");
 
                         if (topic != "payment")
@@ -194,6 +232,7 @@ namespace BugsMVC.Controllers
                         if (await bugsDbContext.MercadoPagoTable.FirstOrDefaultAsync((e) => e.Comprobante == idComprobante.ToString() && e.Entidad == "MP") != null)
                         {
                             Log.Info($"[{idComprobante}] - La notificación ya fue recibida y procesada anteriormente");
+                            DevInfo($"DEV | Evento descartado | motivo=duplicado | id={idComprobante} | ext_ref=sin_dato | detalle=notificacion ya procesada en MercadoPagoTable");
                             return;
                         }
 
@@ -226,6 +265,7 @@ namespace BugsMVC.Controllers
                                     paymentExternalReference = paymentSimulador.external_reference;
                                     paymentCurrencyId = paymentSimulador.currency_id;
                                     paymentMethodId = paymentSimulador.payment_method_id;
+                                    DevInfo($"DEV | Payment obtenido | id={idComprobante} | status={paymentStatus} | amount={paymentTransactionAmount} | ext_ref={paymentExternalReference} | currency={paymentCurrencyId} | method={paymentMethodId} | fuente=mp_simulator");
                                 }
                                 else
                                 {
@@ -237,6 +277,7 @@ namespace BugsMVC.Controllers
                                     paymentExternalReference = payment.ExternalReference;
                                     paymentCurrencyId = payment.CurrencyId;
                                     paymentMethodId = payment.PaymentMethodId;
+                                    DevInfo($"DEV | Payment obtenido | id={idComprobante} | status={paymentStatus} | amount={paymentTransactionAmount} | ext_ref={paymentExternalReference} | currency={paymentCurrencyId} | method={paymentMethodId} | fuente=sdk");
                                 }
                             }
                             finally
@@ -255,6 +296,7 @@ namespace BugsMVC.Controllers
                             Log.Error($"Respuesta de API: {ex.ApiResponse}");
 
                             string mensajeDescripcion = $"Pago no encontrado - {idComprobante}";
+                            DevError($"DEV | mp_simulator error | id={idComprobante} | status_code={ex.StatusCode} | detalle={ex.Message}");
 
                             await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, operador);
 
@@ -265,6 +307,7 @@ namespace BugsMVC.Controllers
                             //Salida, se agrega este caso para cuando se produce un error al buscar el payment, como en casos donde no se autorizan las credenciales de mercado pago.
                             string mensajeDescripcion = $"Se produjo un error al buscar el payment: {idComprobante}";
                             Log.Error($"[{idComprobante}] - {mensajeDescripcion}  - {e}");
+                            DevError($"DEV | mp_simulator error | id={idComprobante} | status_code=sin_dato | detalle={e.Message}");
 
                             await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, operador);
                             return;
@@ -291,6 +334,7 @@ namespace BugsMVC.Controllers
                             {
                                 string mensajeDescripcion = "External Reference es nulo o vacío en pago autorizado.";
                                 Log.Error($"[{idComprobante}] - {mensajeDescripcion}");
+                                DevWarn($"DEV | Payment inválido | motivo=external_reference vacío | id={idComprobante}");
                                 await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, operador, monto);
                                 return;
                             }
@@ -298,9 +342,11 @@ namespace BugsMVC.Controllers
                             if (!PagosMixtosConfigHelper.PagosMixtosHabilitados)
                             {
                                 Log.Info($"[{idComprobante}] - Se recibió un pago con estado Authorized y el modo de pagos mixtos se encuentra en OFF. El evento será descartado sin persistencia.");
+                                DevInfo($"DEV | Clasificación | tipo=simple | motivo=PagosMixtos OFF | id={idComprobante} | ext_ref={paymentExternalReference}");
                                 return;
                             }
 
+                            DevInfo($"DEV | Mixto | evento=authorized | ext_ref={paymentExternalReference} | acción=crear/actualizar pendiente");
                             await RegistrarPagoMixtoAutorizado(bugsDbContext, operador, paymentExternalReference);
                             return;
                         }
@@ -330,12 +376,14 @@ namespace BugsMVC.Controllers
                                     if (await PagoMixtoYaProcesado(bugsDbContext, operador, idComprobante))
                                     {
                                         Log.Info($"[{idComprobante}] - Payment ya procesado para operación mixta, descartando duplicado.");
+                                        DevInfo($"DEV | Evento descartado | motivo=duplicado | id={idComprobante} | ext_ref={paymentExternalReference} | detalle=payment ya procesado para operacion mixta");
                                         return;
                                     }
 
                                     var operacionMixta = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, paymentExternalReference);
                                     if (operacionMixta != null)
                                     {
+                                        DevInfo($"DEV | Clasificación | tipo=mixto | MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId} | id={idComprobante} | ext_ref={paymentExternalReference}");
                                         if (OperacionMixtaExpirada(operacionMixta))
                                         {
                                             await CerrarPagoMixtoInconsistente(bugsDbContext, operacionMixta, operador);
@@ -345,8 +393,11 @@ namespace BugsMVC.Controllers
                                         if (operacionMixta.PaymentId1 == idComprobante || operacionMixta.PaymentId2 == idComprobante)
                                         {
                                             Log.Info($"[{idComprobante}] - Payment repetido en operación mixta pendiente, descartando.");
+                                            DevInfo($"DEV | Evento descartado | motivo=duplicado | id={idComprobante} | ext_ref={paymentExternalReference} | detalle=payment repetido en operación mixta pendiente");
                                             return;
                                         }
+
+                                        DevInfo($"DEV | Mixto | evento=approved | id={idComprobante} | ext_ref={paymentExternalReference} | monto={monto} | estado_previo: ApprovedCount={operacionMixta.ApprovedCount} MontoAcumulado={operacionMixta.MontoAcumulado} PaymentId1={operacionMixta.PaymentId1} PaymentId2={operacionMixta.PaymentId2}");
 
                                         operacionMixta.MontoAcumulado += monto;
                                         operacionMixta.ApprovedCount += 1;
@@ -355,21 +406,27 @@ namespace BugsMVC.Controllers
                                         if (operacionMixta.PaymentId1 == null)
                                         {
                                             operacionMixta.PaymentId1 = idComprobante;
+                                            DevInfo($"DEV | Mixto | asignación | campo=PaymentId1 | valor={idComprobante}");
                                         }
                                         else if (operacionMixta.PaymentId2 == null)
                                         {
                                             operacionMixta.PaymentId2 = idComprobante;
+                                            DevInfo($"DEV | Mixto | asignación | campo=PaymentId2 | valor={idComprobante}");
                                         }
 
                                         if (!OperacionMixtaTieneDosPagosParcialesRegistrados(operacionMixta))
                                         {
+                                            DevInfo($"DEV | Mixto | pendiente incompleta | motivo=falta segunda parte | ApprovedCount={operacionMixta.ApprovedCount} | MontoAcumulado={operacionMixta.MontoAcumulado}");
                                             bugsDbContext.Entry(operacionMixta).State = EntityState.Modified;
                                             await bugsDbContext.SaveChangesAsync();
                                             return;
                                         }
 
+                                        DevInfo($"DEV | Mixto | pendiente completa | PaymentId1={operacionMixta.PaymentId1} | PaymentId2={operacionMixta.PaymentId2} | MontoAcumulado={operacionMixta.MontoAcumulado} | ApprovedCount={operacionMixta.ApprovedCount}");
+
                                         if (!OperacionMixtaValidaParaEnvioMaquina(operacionMixta))
                                         {
+                                            DevWarn($"DEV | Mixto | inválida para envío a máquina | motivo=PaymentId 0 o MontoAcumulado=0 | PaymentId1={operacionMixta.PaymentId1} | PaymentId2={operacionMixta.PaymentId2} | MontoAcumulado={operacionMixta.MontoAcumulado}");
                                             await CerrarPagoMixtoRechazadoOCancelado(bugsDbContext, operacionMixta, operador);
                                             return;
                                         }
@@ -395,6 +452,7 @@ namespace BugsMVC.Controllers
 
                                         try
                                         {
+                                            DevInfo($"DEV | MercadoPagoTable insert | tipo=mixto | comprobante={paymentEntity.Comprobante} | monto={paymentEntity.Monto} | maquinaId={paymentEntity.Maquina?.MaquinaID} | estados={paymentEntity.MercadoPagoEstadoFinancieroId}/{paymentEntity.MercadoPagoEstadoTransmisionId}");
                                             bugsDbContext.MercadoPagoTable.Add(paymentEntity);
                                             operacionMixta.Cerrada = true;
                                             operacionMixta.FechaCierreUtc = DateTime.UtcNow;
@@ -410,6 +468,7 @@ namespace BugsMVC.Controllers
                                             if (existente != null)
                                             {
                                                 Log.Info($"[{idComprobante}] - Intento de inserción duplicada para Comprobante: {paymentEntity.Comprobante}. Ya existe con ID: {existente.MercadoPagoId}");
+                                                DevInfo($"DEV | Evento descartado | motivo=duplicado | id={idComprobante} | ext_ref={paymentExternalReference} | detalle=insert MercadoPagoTable duplicada en flujo mixto");
                                             }
                                             else
                                             {
@@ -419,6 +478,12 @@ namespace BugsMVC.Controllers
 
                                         return;
                                     }
+
+                                    DevInfo($"DEV | Clasificación | tipo=simple | motivo=no hay operación mixta pendiente | id={idComprobante} | ext_ref={paymentExternalReference}");
+                                }
+                                else
+                                {
+                                    DevInfo($"DEV | Clasificación | tipo=simple | motivo=PagosMixtos OFF | id={idComprobante} | ext_ref={paymentExternalReference}");
                                 }
 
                                 Maquina maquina = await ObtenerMaquinaPorExternalReference(bugsDbContext, paymentExternalReference, operador, idComprobante, monto);
@@ -442,6 +507,7 @@ namespace BugsMVC.Controllers
 
                                 try
                                 {
+                                    DevInfo($"DEV | MercadoPagoTable insert | tipo=simple | comprobante={paymentEntityNormal.Comprobante} | monto={paymentEntityNormal.Monto} | maquinaId={paymentEntityNormal.Maquina?.MaquinaID} | estados={paymentEntityNormal.MercadoPagoEstadoFinancieroId}/{paymentEntityNormal.MercadoPagoEstadoTransmisionId}");
                                     bugsDbContext.MercadoPagoTable.Add(paymentEntityNormal);
                                     await bugsDbContext.SaveChangesAsync();
                                     await EnviarPagoAMaquina(bugsDbContext, paymentEntityNormal);
@@ -454,6 +520,7 @@ namespace BugsMVC.Controllers
                                     if (existente != null)
                                     {
                                         Log.Info($"[{idComprobante}] - Intento de inserción duplicada para Comprobante: {paymentEntityNormal.Comprobante}. Ya existe con ID: {existente.MercadoPagoId}");
+                                        DevInfo($"DEV | Evento descartado | motivo=duplicado | id={idComprobante} | ext_ref={paymentExternalReference} | detalle=insert MercadoPagoTable duplicada en flujo simple");
                                     }
                                     else
                                     {
@@ -467,6 +534,7 @@ namespace BugsMVC.Controllers
                             {
                                 string mensajeDescripcion = "External Reference es nulo.";
                                 Log.Info($"[{idComprobante}] - {mensajeDescripcion}");
+                                DevWarn($"DEV | Payment inválido | motivo=external_reference vacío | id={idComprobante}");
                                 await GuardarNoProcesable(bugsDbContext, idComprobante, mensajeDescripcion, operador, monto);
                             }
                             return;
@@ -474,6 +542,7 @@ namespace BugsMVC.Controllers
                         else if (EsEstadoPago(paymentStatus, "rejected") || EsEstadoPago(paymentStatus, "cancelled"))
                         {
                             Log.Info($"[{idComprobante}] - Mercado Pago status: {paymentStatus}");
+                            DevInfo($"DEV | Mixto | evento={paymentStatus} | id={idComprobante} | ext_ref={paymentExternalReference}");
 
                             if (string.IsNullOrWhiteSpace(paymentExternalReference) || !PagosMixtosConfigHelper.PagosMixtosHabilitados)
                             {
@@ -497,6 +566,7 @@ namespace BugsMVC.Controllers
                                  (operacionMixta.PaymentId2 == 0 && !operacionMixta.PaymentId1.HasValue)))
                             {
                                 Log.Info($"[{idComprobante}] - Operación mixta ya tiene un pago parcial rechazado/cancelado registrado en 0 y sin aprobados. Se ignora el evento para evitar cierre prematuro. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}.");
+                                DevInfo($"DEV | Mixto | evento ignorado | motivo=ya existe pata=0 sin aprobados | opMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}");
                                 return;
                             }
 
@@ -517,6 +587,7 @@ namespace BugsMVC.Controllers
                             if (paymentIdCampoActualizado != null)
                             {
                                 Log.Info($"[{idComprobante}] - Registrando pago parcial rechazado/cancelado en 0. ExternalReference={paymentExternalReference}, MercadoPagoOperacionMixtaId={operacionMixta.MercadoPagoOperacionMixtaId}, CampoActualizado={paymentIdCampoActualizado}.");
+                                DevInfo($"DEV | Mixto | registro de pago parcial no aprobado | campo={paymentIdCampoActualizado} | valor=0");
                             }
 
                             if (!OperacionMixtaTieneDosPagosParcialesRegistrados(operacionMixta))
@@ -576,6 +647,7 @@ namespace BugsMVC.Controllers
             int destinoPuerto = AmbienteConfigHelper.AmbienteSimuladoresHabilitado ? 13000 : Convert.ToInt32(puerto);
 
             Log.Info($"[{mercadoPago.Comprobante}] - Enviando pago a máquina...");
+            DevInfo($"DEV | Envío a máquina | inicio | maquinaId={mercadoPago.Maquina?.MaquinaID} | monto={mercadoPago.Monto} | comprobante={mercadoPago.Comprobante}");
 
             if (AmbienteConfigHelper.AmbienteSimuladoresHabilitado)
             {
@@ -674,6 +746,7 @@ namespace BugsMVC.Controllers
                 }
             }
             Log.Info($"[{mercadoPago.Comprobante}] - Finalizó envío a máquina.");
+            DevInfo($"DEV | Envío a máquina | fin | ok={!volverAintentar}");
         }
 
         private async Task ProcesarPendientesMixtosExpirados(BugsContext bugsDbContext, Operador operador)
@@ -697,6 +770,7 @@ namespace BugsMVC.Controllers
 
             if (pendiente != null)
             {
+                DevInfo($"DEV | Mixto | evento=authorized | ext_ref={externalReference} | acción=refresh timestamp");
                 pendiente.FechaUltimaActualizacionUtc = ahora;
                 bugsDbContext.Entry(pendiente).State = EntityState.Modified;
                 await bugsDbContext.SaveChangesAsync();
@@ -719,6 +793,7 @@ namespace BugsMVC.Controllers
 
             bugsDbContext.MercadoPagoOperacionMixta.Add(operacion);
             await bugsDbContext.SaveChangesAsync();
+            DevInfo($"DEV | Mixto | evento=authorized | ext_ref={externalReference} | acción=creada pendiente");
         }
 
         private async Task<MercadoPagoOperacionMixta> ObtenerOperacionMixtaPendiente(BugsContext bugsDbContext, Operador operador, string externalReference)
@@ -782,6 +857,8 @@ namespace BugsMVC.Controllers
         private async Task CerrarPagoMixtoRechazadoOCancelado(BugsContext bugsDbContext, MercadoPagoOperacionMixta operacion, Operador operador)
         {
             long? paymentIdComprobante = ObtenerPaymentIdComprobanteValido(operacion);
+            bool insertaNoProcesable = operacion.MontoAcumulado > 0 && paymentIdComprobante != null;
+            string comprobanteUsado = paymentIdComprobante?.ToString() ?? "null";
 
             if (operacion.MontoAcumulado <= 0 || paymentIdComprobante == null)
             {
@@ -816,6 +893,8 @@ namespace BugsMVC.Controllers
                     maquinaResuelta);
             }
 
+            DevInfo($"DEV | Mixto | cierre | tipo=rechazado_cancelado | opMixtaId={operacion.MercadoPagoOperacionMixtaId} | MontoAcumulado={operacion.MontoAcumulado} | ApprovedCount={operacion.ApprovedCount} | PaymentId1={operacion.PaymentId1} | PaymentId2={operacion.PaymentId2} | inserta_NO_PROCESABLE={insertaNoProcesable} | comprobanteUsado={comprobanteUsado}");
+
             operacion.Cerrada = true;
             operacion.FechaCierreUtc = DateTime.UtcNow;
             operacion.FechaUltimaActualizacionUtc = DateTime.UtcNow;
@@ -827,6 +906,8 @@ namespace BugsMVC.Controllers
         {
             bool cierreSilencioso = operacion.MontoAcumulado == 0 ||
                 (operacion.PaymentId1 == null && operacion.PaymentId2 == null);
+            bool insertaNoProcesable = !cierreSilencioso;
+            string comprobanteUsado = "null";
 
             if (cierreSilencioso)
             {
@@ -838,6 +919,7 @@ namespace BugsMVC.Controllers
             else
             {
                 long? paymentIdComprobante = ObtenerPaymentIdComprobanteValido(operacion);
+                comprobanteUsado = paymentIdComprobante?.ToString() ?? "null";
 
                 if (paymentIdComprobante == null)
                 {
@@ -871,6 +953,8 @@ namespace BugsMVC.Controllers
                     paymentIdComprobante?.ToString(),
                     maquinaResuelta);
             }
+
+            DevInfo($"DEV | Mixto | cierre | tipo=timeout | opMixtaId={operacion.MercadoPagoOperacionMixtaId} | MontoAcumulado={operacion.MontoAcumulado} | ApprovedCount={operacion.ApprovedCount} | PaymentId1={operacion.PaymentId1} | PaymentId2={operacion.PaymentId2} | inserta_NO_PROCESABLE={insertaNoProcesable} | comprobanteUsado={comprobanteUsado}");
 
             operacion.Cerrada = true;
             operacion.FechaCierreUtc = DateTime.UtcNow;
@@ -974,6 +1058,7 @@ namespace BugsMVC.Controllers
         private async Task<MpSimPaymentDto> ConsultarPaymentEnSimulador(long idComprobante)
         {
             string url = $"http://127.0.0.1:5005/v1/payments/{idComprobante}";
+            DevInfo($"DEV | mp_simulator GET payment | url={url} | id={idComprobante}");
 
             using (var httpClient = new HttpClient())
             {
@@ -981,6 +1066,7 @@ namespace BugsMVC.Controllers
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
+                    DevError($"DEV | mp_simulator error | id={idComprobante} | status_code={(int)response.StatusCode} | detalle=payment no encontrado");
                     throw new Exception($"No se encontró el payment {idComprobante} en mp_simulator.");
                 }
 
