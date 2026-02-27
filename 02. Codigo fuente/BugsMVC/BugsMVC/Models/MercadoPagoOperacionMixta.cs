@@ -16,7 +16,7 @@ namespace BugsMVC.Models
         public string ExternalReference { get; set; }
 
         [Required]
-        public DateTime FechaAuthorizedUtc { get; set; }
+        public DateTime FechaAuthorized { get; set; }
 
         public decimal MontoAcumulado { get; set; }
 
@@ -28,9 +28,9 @@ namespace BugsMVC.Models
 
         public bool Cerrada { get; set; }
 
-        public DateTime? FechaCierreUtc { get; set; }
+        public DateTime? FechaCierre { get; set; }
 
         [Required]
-        public DateTime FechaUltimaActualizacionUtc { get; set; }
+        public DateTime FechaUltimaActualizacion { get; set; }
     }
 }
