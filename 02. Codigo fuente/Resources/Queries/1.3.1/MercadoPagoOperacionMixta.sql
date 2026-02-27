@@ -7,14 +7,14 @@ BEGIN
         MercadoPagoOperacionMixtaId INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
         OperadorId UNIQUEIDENTIFIER NOT NULL,
         ExternalReference NVARCHAR(200) NOT NULL,
-        FechaAuthorizedUtc DATETIME NOT NULL,
+        FechaAuthorized DATETIME NOT NULL,
         MontoAcumulado DECIMAL(18, 2) NOT NULL CONSTRAINT DF_MercadoPagoOperacionMixta_MontoAcumulado DEFAULT (0),
         ApprovedCount INT NOT NULL CONSTRAINT DF_MercadoPagoOperacionMixta_ApprovedCount DEFAULT (0),
         PaymentId1 BIGINT NULL,
         PaymentId2 BIGINT NULL,
         Cerrada BIT NOT NULL CONSTRAINT DF_MercadoPagoOperacionMixta_Cerrada DEFAULT (0),
-        FechaCierreUtc DATETIME NULL,
-        FechaUltimaActualizacionUtc DATETIME NOT NULL CONSTRAINT DF_MercadoPagoOperacionMixta_FechaUltimaActualizacionUtc DEFAULT (GETUTCDATE())
+        FechaCierre DATETIME NULL,
+        FechaUltimaActualizacion DATETIME NOT NULL CONSTRAINT DF_MercadoPagoOperacionMixta_FechaUltimaActualizacion DEFAULT (DATEADD(HOUR, -3, GETUTCDATE()))
     );
 END;
 

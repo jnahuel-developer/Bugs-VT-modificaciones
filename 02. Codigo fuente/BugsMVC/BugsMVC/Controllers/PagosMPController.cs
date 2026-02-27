@@ -97,6 +97,8 @@ namespace BugsMVC.Controllers
         private readonly int OPERADOR_NULO = 99999;
         private static readonly TimeSpan VentanaPagoMixto = TimeSpan.FromSeconds(15);
 
+        private static DateTime AhoraUtcMenos3() => DateTime.UtcNow.AddHours(-3);
+
         private ApplicationUserManager _userManager;
         public ApplicationUserManager UserManager
         {
@@ -370,7 +372,7 @@ namespace BugsMVC.Controllers
 
                                         operacionMixta.MontoAcumulado += monto;
                                         operacionMixta.ApprovedCount += 1;
-                                        operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+                                        operacionMixta.FechaUltimaActualizacion = AhoraUtcMenos3();
 
                                         if (operacionMixta.PaymentId1 == null)
                                         {
@@ -424,8 +426,8 @@ namespace BugsMVC.Controllers
                                             DevInfo($"DEV | MercadoPagoTable insert | tipo=mixto | comprobante={paymentEntity.Comprobante} | monto={paymentEntity.Monto} | maquinaId={paymentEntity.Maquina?.MaquinaID} | estados={paymentEntity.MercadoPagoEstadoFinancieroId}/{paymentEntity.MercadoPagoEstadoTransmisionId}");
                                             bugsDbContext.MercadoPagoTable.Add(paymentEntity);
                                             operacionMixta.Cerrada = true;
-                                            operacionMixta.FechaCierreUtc = DateTime.UtcNow;
-                                            operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+                                            operacionMixta.FechaCierre = AhoraUtcMenos3();
+                                            operacionMixta.FechaUltimaActualizacion = AhoraUtcMenos3();
                                             await bugsDbContext.SaveChangesAsync();
                                             await EnviarPagoAMaquina(bugsDbContext, paymentEntity);
                                         }
@@ -547,7 +549,7 @@ namespace BugsMVC.Controllers
                                 paymentIdCampoActualizado = nameof(operacionMixta.PaymentId2);
                             }
 
-                            operacionMixta.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+                            operacionMixta.FechaUltimaActualizacion = AhoraUtcMenos3();
 
                             if (paymentIdCampoActualizado != null)
                             {
@@ -704,10 +706,10 @@ namespace BugsMVC.Controllers
 
         private async Task ProcesarPendientesMixtosExpirados(BugsContext bugsDbContext, Operador operador)
         {
-            DateTime limite = DateTime.UtcNow.Subtract(VentanaPagoMixto);
+            DateTime limite = AhoraUtcMenos3().Subtract(VentanaPagoMixto);
 
             var pendientesExpirados = await bugsDbContext.MercadoPagoOperacionMixta
-                .Where(x => x.OperadorId == operador.OperadorID && !x.Cerrada && x.FechaAuthorizedUtc <= limite)
+                .Where(x => x.OperadorId == operador.OperadorID && !x.Cerrada && x.FechaAuthorized <= limite)
                 .ToListAsync();
 
             foreach (var pendiente in pendientesExpirados)
@@ -719,12 +721,12 @@ namespace BugsMVC.Controllers
         private async Task RegistrarPagoMixtoAutorizado(BugsContext bugsDbContext, Operador operador, string externalReference)
         {
             var pendiente = await ObtenerOperacionMixtaPendiente(bugsDbContext, operador, externalReference);
-            DateTime ahora = DateTime.UtcNow;
+            DateTime ahora = AhoraUtcMenos3();
 
             if (pendiente != null)
             {
                 DevInfo($"DEV | Mixto | evento=authorized | ext_ref={externalReference} | acción=refresh timestamp");
-                pendiente.FechaUltimaActualizacionUtc = ahora;
+                pendiente.FechaUltimaActualizacion = ahora;
                 bugsDbContext.Entry(pendiente).State = EntityState.Modified;
                 await bugsDbContext.SaveChangesAsync();
                 return;
@@ -734,14 +736,14 @@ namespace BugsMVC.Controllers
             {
                 OperadorId = operador.OperadorID,
                 ExternalReference = externalReference,
-                FechaAuthorizedUtc = ahora,
+                FechaAuthorized = ahora,
                 MontoAcumulado = 0,
                 ApprovedCount = 0,
                 PaymentId1 = null,
                 PaymentId2 = null,
                 Cerrada = false,
-                FechaCierreUtc = null,
-                FechaUltimaActualizacionUtc = ahora
+                FechaCierre = null,
+                FechaUltimaActualizacion = ahora
             };
 
             bugsDbContext.MercadoPagoOperacionMixta.Add(operacion);
@@ -757,7 +759,7 @@ namespace BugsMVC.Controllers
 
         private bool OperacionMixtaExpirada(MercadoPagoOperacionMixta operacion)
         {
-            return DateTime.UtcNow.Subtract(operacion.FechaAuthorizedUtc) > VentanaPagoMixto;
+            return AhoraUtcMenos3().Subtract(operacion.FechaAuthorized) > VentanaPagoMixto;
         }
 
         private async Task<bool> PagoMixtoYaProcesado(BugsContext bugsDbContext, Operador operador, long idComprobante)
@@ -849,8 +851,8 @@ namespace BugsMVC.Controllers
             DevInfo($"DEV | Mixto | cierre | tipo=rechazado_cancelado | opMixtaId={operacion.MercadoPagoOperacionMixtaId} | MontoAcumulado={operacion.MontoAcumulado} | ApprovedCount={operacion.ApprovedCount} | PaymentId1={operacion.PaymentId1} | PaymentId2={operacion.PaymentId2} | inserta_NO_PROCESABLE={insertaNoProcesable} | comprobanteUsado={comprobanteUsado}");
 
             operacion.Cerrada = true;
-            operacion.FechaCierreUtc = DateTime.UtcNow;
-            operacion.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+            operacion.FechaCierre = AhoraUtcMenos3();
+            operacion.FechaUltimaActualizacion = AhoraUtcMenos3();
             bugsDbContext.Entry(operacion).State = EntityState.Modified;
             await bugsDbContext.SaveChangesAsync();
         }
@@ -910,8 +912,8 @@ namespace BugsMVC.Controllers
             DevInfo($"DEV | Mixto | cierre | tipo=timeout | opMixtaId={operacion.MercadoPagoOperacionMixtaId} | MontoAcumulado={operacion.MontoAcumulado} | ApprovedCount={operacion.ApprovedCount} | PaymentId1={operacion.PaymentId1} | PaymentId2={operacion.PaymentId2} | inserta_NO_PROCESABLE={insertaNoProcesable} | comprobanteUsado={comprobanteUsado}");
 
             operacion.Cerrada = true;
-            operacion.FechaCierreUtc = DateTime.UtcNow;
-            operacion.FechaUltimaActualizacionUtc = DateTime.UtcNow;
+            operacion.FechaCierre = AhoraUtcMenos3();
+            operacion.FechaUltimaActualizacion = AhoraUtcMenos3();
             bugsDbContext.Entry(operacion).State = EntityState.Modified;
             await bugsDbContext.SaveChangesAsync();
         }
