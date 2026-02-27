@@ -1,0 +1,98 @@
+
+esto que se genera me demuestra que estan bien los seteos en el config para que maneje pagos mixtos
+-------------------------------
+2026-02-25 16:52:57,434 - INFO - Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: ON.
+2026-02-25 16:52:57,453 - INFO - Se resolvió la configuración 'Ambiente:Desarrollo' con valor efectivo: OFF.
+2026-02-25 16:52:57,454 - INFO - Se resolvió la configuración 'Ambiente:Simuladores' con valor efectivo: OFF.
+
+cobro NO mixto, correcto $17.-
+-------------------------------
+2026-02-25 16:56:09,627 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147748303100 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147748303100&operador=5&topic=payment
+2026-02-25 16:56:09,642 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-25 16:56:09,856 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147748303100, operador=5, version=1.1.4
+2026-02-25 16:56:09,971 - INFO - [147748303100] - Esperando turno en la fila para obtener payment...
+2026-02-25 16:56:09,971 - INFO - [147748303100] - Intentando obtener información de payment...
+2026-02-25 16:56:12,185 - INFO - [147748303100] - finalizada fila de payment.
+2026-02-25 16:56:12,185 - INFO - [147748303100] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-25 16:56:12,185 - INFO - [147748303100] - External Reference: BGSQR_05500,Monto:17
+2026-02-25 16:56:12,185 - INFO - [147748303100] - CurrencyId: ARS
+2026-02-25 16:56:12,185 - INFO - [147748303100] - Payment Method: account_money
+2026-02-25 16:56:12,185 - INFO - [147748303100] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-25 16:56:13,040 - INFO - [147748303100] - Enviando pago a máquina...
+2026-02-25 16:56:13,040 - INFO - Se utilizará el destino configurado para el envío a máquina (127.0.0.1:13000).
+2026-02-25 16:56:13,041 - INFO - [147748303100] - Intento 1 de 3 para enviar pago a máquina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+
+cobro NO mixto, correcto $15.-
+-------------------------------
+2026-02-25 17:15:28,983 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147046388837 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147046388837&operador=5&topic=payment
+2026-02-25 17:15:28,983 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-25 17:15:28,987 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147046388837, operador=5, version=1.1.4
+2026-02-25 17:15:29,028 - INFO - [147046388837] - Esperando turno en la fila para obtener payment...
+2026-02-25 17:15:29,028 - INFO - [147046388837] - Intentando obtener información de payment...
+2026-02-25 17:15:30,727 - INFO - [147046388837] - finalizada fila de payment.
+2026-02-25 17:15:30,727 - INFO - [147046388837] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-25 17:15:30,727 - INFO - [147046388837] - External Reference: BGSQR_05500,Monto:15
+2026-02-25 17:15:30,727 - INFO - [147046388837] - CurrencyId: ARS
+2026-02-25 17:15:30,727 - INFO - [147046388837] - Payment Method: account_money
+2026-02-25 17:15:30,727 - INFO - [147046388837] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-25 17:15:30,742 - INFO - [147046388837] - Enviando pago a máquina...
+2026-02-25 17:15:30,742 - INFO - Se utilizará el destino configurado para el envío a máquina (127.0.0.1:13000).
+2026-02-25 17:15:30,742 - INFO - [147046388837] - Intento 1 de 3 para enviar pago a máquina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-25 17:15:30,744 - INFO - [147748303100] - Enviado correctamente a máquina: 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-25 17:15:30,744 - INFO - [147748303100] - Finalizó envío a máquina.
+2026-02-25 17:15:30,746 - INFO - [147748303100] - Finalizó el proceso de RegistrarPago.
+
+
+*********************************
+cobro MIXTO, imagino que lo esta tomandno como NO MIXTO ya que siguio el camino de no mixto.
+en la tabla de mixtos no registro nada
+este pago fue de $2400.-
+$2350 + $50
+-------------------------------
+2026-02-25 19:35:55,904 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147770666170 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147770666170&operador=5&topic=payment
+2026-02-25 19:35:55,904 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-25 19:35:55,909 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147770666170, operador=5, version=1.1.4
+2026-02-25 19:35:55,952 - INFO - [147770666170] - Esperando turno en la fila para obtener payment...
+2026-02-25 19:35:55,952 - INFO - [147770666170] - Intentando obtener información de payment...
+
+Parte de $2350
+-------------------------------
+2026-02-25 19:35:57,285 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147066304825 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147066304825&operador=5&topic=payment
+2026-02-25 19:35:57,285 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-25 19:35:57,289 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147066304825, operador=5, version=1.1.4
+2026-02-25 19:35:57,330 - INFO - [147066304825] - Esperando turno en la fila para obtener payment...
+2026-02-25 19:35:57,614 - INFO - [147770666170] - finalizada fila de payment.
+2026-02-25 19:35:57,615 - INFO - [147770666170] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-25 19:35:57,615 - INFO - [147066304825] - Intentando obtener información de payment...
+2026-02-25 19:35:57,615 - INFO - [147770666170] - External Reference: BGSQR_05500,Monto:2350
+2026-02-25 19:35:57,615 - INFO - [147770666170] - CurrencyId: ARS
+2026-02-25 19:35:57,615 - INFO - [147770666170] - Payment Method: account_money
+2026-02-25 19:35:57,615 - INFO - [147770666170] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-25 19:35:57,631 - INFO - [147770666170] - Enviando pago a máquina...
+2026-02-25 19:35:57,631 - INFO - Se utilizará el destino configurado para el envío a máquina (127.0.0.1:13000).
+2026-02-25 19:35:57,631 - INFO - [147770666170] - Intento 1 de 3 para enviar pago a máquina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-25 19:35:57,634 - INFO - [147046388837] - Enviado correctamente a máquina: 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-25 19:35:57,634 - INFO - [147046388837] - Finalizó envío a máquina.
+2026-02-25 19:35:57,634 - INFO - [147046388837] - Finalizó el proceso de RegistrarPago.
+
+Parte de $50
+-------------------------------
+2026-02-25 19:35:57,651 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147770666170 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147770666170&operador=5&topic=payment
+2026-02-25 19:35:57,651 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-25 19:35:57,654 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147770666170, operador=5, version=1.1.4
+2026-02-25 19:35:57,696 - INFO - [147770666170] - La notificación ya fue recibida y procesada anteriormente
+2026-02-25 19:35:57,696 - INFO - [147770666170] - Finalizó el proceso de RegistrarPago.
+2026-02-25 19:35:57,824 - INFO - [147066304825] - finalizada fila de payment.
+2026-02-25 19:35:57,824 - INFO - [147066304825] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-25 19:35:57,824 - INFO - [147066304825] - External Reference: BGSQR_05500,Monto:50
+2026-02-25 19:35:57,824 - INFO - [147066304825] - CurrencyId: ARS
+2026-02-25 19:35:57,824 - INFO - [147066304825] - Payment Method: visa
+2026-02-25 19:35:57,824 - INFO - [147066304825] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-25 19:35:57,839 - INFO - [147066304825] - Enviando pago a máquina...
+2026-02-25 19:35:57,839 - INFO - Se utilizará el destino configurado para el envío a máquina (127.0.0.1:13000).
+2026-02-25 19:35:57,839 - INFO - [147066304825] - Intento 1 de 3 para enviar pago a máquina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-25 19:35:57,842 - INFO - [147770666170] - Enviado correctamente a máquina: 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-25 19:35:57,842 - INFO - [147770666170] - Finalizó envío a máquina.
+2026-02-25 19:35:57,842 - INFO - [147770666170] - Finalizó el proceso de RegistrarPago.
+
+*************************************

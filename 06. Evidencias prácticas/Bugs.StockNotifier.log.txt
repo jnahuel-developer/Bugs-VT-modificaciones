@@ -1,0 +1,273 @@
+corri el stock notifier con mixtos apagados, habia una devolucion no mixta para devolver, lo manejo bien.
+--------------------------------------------------------------------------------
+2026-02-20 17:46:03,212 - INFO - Se resolvió la configuración 'Ambiente:Desarrollo' con valor efectivo: OFF.
+2026-02-20 17:46:03,222 - INFO - Se resolvió la configuración 'Ambiente:Simuladores' con valor efectivo: OFF.
+2026-02-20 17:46:03,222 - INFO - Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: OFF.
+2026-02-20 17:46:03,231 - INFO - Configuración: Pagos mixtos habilitados = False.
+2026-02-20 17:46:03,231 - INFO - Configuración: Ambiente de desarrollo habilitado = False.
+2026-02-20 17:46:03,232 - INFO - Configuración: Ambiente de simuladores habilitado = False.
+2026-02-20 17:46:05,918 - INFO - --------------------------------------------------------------------------------
+2026-02-20 17:46:05,918 - INFO - Control de stock
+2026-02-20 17:46:05,918 - INFO - Control Maquinas Conectadas
+2026-02-20 17:46:07,415 - INFO - Control Devoluciones
+2026-02-20 17:46:07,451 - INFO - Maquina:8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-20 17:46:07,464 - INFO - Devolviendo al Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff
+2026-02-20 17:46:07,464 - INFO - Buscando comprobante 146099210331 en MP
+2026-02-20 17:46:07,492 - INFO - Intentando obtener información de payment...
+2026-02-20 17:46:09,412 - INFO - Comprobante encontrado
+2026-02-20 17:46:09,415 - INFO - Procesando reembolso para el pago con ID: 146099210331
+2026-02-20 17:46:10,168 - INFO - Estado del reembolso: approved
+2026-02-20 17:46:10,366 - INFO - Revisando status del pago...
+2026-02-20 17:46:10,366 - INFO - Payment Status: refunded
+2026-02-20 17:46:10,366 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:46:10,366 - INFO - Actualizando registro en MercadoPagoTable
+
+
+
+corri el stock notifier con mixtos apagados, no habia nada para devolver, lo manejo bien.
+--------------------------------------------------------------------------------------------------------------
+2026-02-20 17:49:26,494 - INFO - Se resolvió la configuración 'Ambiente:Desarrollo' con valor efectivo: OFF.
+2026-02-20 17:49:26,502 - INFO - Se resolvió la configuración 'Ambiente:Simuladores' con valor efectivo: OFF.
+2026-02-20 17:49:26,502 - INFO - Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: OFF.
+2026-02-20 17:49:26,511 - INFO - Configuración: Pagos mixtos habilitados = False.
+2026-02-20 17:49:26,511 - INFO - Configuración: Ambiente de desarrollo habilitado = False.
+2026-02-20 17:49:26,511 - INFO - Configuración: Ambiente de simuladores habilitado = False.
+2026-02-20 17:49:29,108 - INFO - --------------------------------------------------------------------------------
+2026-02-20 17:49:29,108 - INFO - Control de stock
+2026-02-20 17:49:29,108 - INFO - Control Maquinas Conectadas
+2026-02-20 17:49:30,455 - INFO - Control Devoluciones
+
+
+
+corri el stock notifier con mixtos activados, habia una devolucion no mixta para devolver, SE ENLOQUECIO....
+--------------------------------------------------------------------------------------------------------------
+2026-02-20 17:56:10,642 - INFO - Se resolvió la configuración 'Ambiente:Desarrollo' con valor efectivo: OFF.
+2026-02-20 17:56:10,650 - INFO - Se resolvió la configuración 'Ambiente:Simuladores' con valor efectivo: OFF.
+2026-02-20 17:56:10,650 - INFO - Se resolvió la configuración 'PagosMixtos:Modo' con valor efectivo: ON.
+2026-02-20 17:56:10,659 - INFO - Configuración: Pagos mixtos habilitados = True.
+2026-02-20 17:56:10,659 - INFO - Configuración: Ambiente de desarrollo habilitado = False.
+2026-02-20 17:56:10,659 - INFO - Configuración: Ambiente de simuladores habilitado = False.
+2026-02-20 17:56:13,307 - INFO - --------------------------------------------------------------------------------
+2026-02-20 17:56:13,307 - INFO - Control de stock
+2026-02-20 17:56:13,307 - INFO - Control Maquinas Conectadas
+2026-02-20 17:56:14,649 - INFO - Control Devoluciones
+2026-02-20 17:56:14,684 - INFO - Maquina:8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-20 17:56:14,694 - INFO - Pagos mixtos habilitados: iniciando análisis de devolución para comprobante 146395226529.
+2026-02-20 17:56:14,721 - INFO - Devolviendo al Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff
+2026-02-20 17:56:14,722 - INFO - Buscando comprobante 146395226529 en MP
+2026-02-20 17:56:14,749 - INFO - Intentando obtener información de payment...
+2026-02-20 17:56:16,621 - INFO - Comprobante encontrado
+2026-02-20 17:56:16,624 - INFO - Procesando reembolso para el pago con ID: 146395226529
+2026-02-20 17:56:17,475 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:17,658 - INFO - Revisando status del pago...
+2026-02-20 17:56:17,658 - INFO - Payment Status: refunded
+2026-02-20 17:56:17,658 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:17,658 - INFO - Actualizando registro en MercadoPagoTable
+
+>>>>>>>>>>>>>>>..HASTA ACA TODO BIEN, pero despues .......
+
+2026-02-20 17:56:17,804 - INFO - Control Devoluciones NO PROCESABLES
+2026-02-20 17:56:17,819 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:17,821 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:17,822 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:17,825 - INFO - MercadoPagoId=485527: IDs a devolver => 12345645.
+2026-02-20 17:56:17,827 - INFO - Procesando reembolso para el pago con ID: 12345645
+2026-02-20 17:56:18,472 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:18,473 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:18,473 - ERROR - Status Code: 404
+2026-02-20 17:56:18,473 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:18,473 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:19,499 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:19,499 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:19,499 - ERROR - Status Code: 404
+2026-02-20 17:56:19,499 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:19,499 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:19,499 - INFO - MercadoPagoId=485527: resultado devolución comprobante 12345645 => no confirmado.
+2026-02-20 17:56:19,499 - INFO - MercadoPagoId=485527: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:19,499 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:19,502 - INFO - MercadoPagoId=485528: IDs a devolver => 1234567.
+2026-02-20 17:56:19,502 - INFO - Procesando reembolso para el pago con ID: 1234567
+2026-02-20 17:56:22,844 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:22,844 - ERROR - Error: Error response from API. | Status code: 500 | API message: internal_error
+2026-02-20 17:56:22,844 - ERROR - Status Code: 500
+2026-02-20 17:56:22,844 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:22,844 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:25,113 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:25,113 - ERROR - Error: Error response from API. | Status code: 500 | API message: internal_error
+2026-02-20 17:56:25,113 - ERROR - Status Code: 500
+2026-02-20 17:56:25,113 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:25,113 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:25,113 - INFO - MercadoPagoId=485528: resultado devolución comprobante 1234567 => no confirmado.
+2026-02-20 17:56:25,113 - INFO - MercadoPagoId=485528: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:25,113 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,115 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,116 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,117 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,118 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,119 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,120 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,121 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,122 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:25,123 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:25,126 - INFO - MercadoPagoId=485548: IDs a devolver => 1234560.
+2026-02-20 17:56:25,126 - INFO - Procesando reembolso para el pago con ID: 1234560
+2026-02-20 17:56:28,484 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:28,484 - ERROR - Error: Error response from API. | Status code: 500 | API message: internal_error
+2026-02-20 17:56:28,484 - ERROR - Status Code: 500
+2026-02-20 17:56:28,484 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:28,484 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:30,740 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:30,740 - ERROR - Error: Error response from API. | Status code: 500 | API message: internal_error
+2026-02-20 17:56:30,740 - ERROR - Status Code: 500
+2026-02-20 17:56:30,740 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:30,740 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:30,740 - INFO - MercadoPagoId=485548: resultado devolución comprobante 1234560 => no confirmado.
+2026-02-20 17:56:30,740 - INFO - MercadoPagoId=485548: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:30,740 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:30,742 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:30,749 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:30,750 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:30,753 - INFO - MercadoPagoId=485553: IDs a devolver => 112619932144.
+2026-02-20 17:56:30,753 - INFO - Procesando reembolso para el pago con ID: 112619932144
+2026-02-20 17:56:31,449 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:31,648 - INFO - Revisando status del pago...
+2026-02-20 17:56:31,648 - INFO - Payment Status: refunded
+2026-02-20 17:56:31,648 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:31,648 - INFO - MercadoPagoId=485553: resultado devolución comprobante 112619932144 => confirmado.
+2026-02-20 17:56:31,667 - INFO - MercadoPagoId=485553: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:31,667 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:31,669 - INFO - MercadoPagoId=485554: IDs a devolver => 112154364073.
+2026-02-20 17:56:31,669 - INFO - Procesando reembolso para el pago con ID: 112154364073
+2026-02-20 17:56:32,357 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:32,538 - INFO - Revisando status del pago...
+2026-02-20 17:56:32,538 - INFO - Payment Status: refunded
+2026-02-20 17:56:32,538 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:32,538 - INFO - MercadoPagoId=485554: resultado devolución comprobante 112154364073 => confirmado.
+2026-02-20 17:56:32,556 - INFO - MercadoPagoId=485554: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:32,556 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:32,557 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:32,558 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:32,559 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:32,562 - INFO - MercadoPagoId=485560: IDs a devolver => 12345688.
+2026-02-20 17:56:32,562 - INFO - Procesando reembolso para el pago con ID: 12345688
+2026-02-20 17:56:35,817 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:35,817 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:35,817 - ERROR - Status Code: 404
+2026-02-20 17:56:35,817 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:35,817 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:36,017 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:36,017 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:36,017 - ERROR - Status Code: 404
+2026-02-20 17:56:36,017 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:36,017 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:36,017 - INFO - MercadoPagoId=485560: resultado devolución comprobante 12345688 => no confirmado.
+2026-02-20 17:56:36,017 - INFO - MercadoPagoId=485560: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:36,017 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:36,020 - INFO - MercadoPagoId=485561: IDs a devolver => 1234568.
+2026-02-20 17:56:36,020 - INFO - Procesando reembolso para el pago con ID: 1234568
+2026-02-20 17:56:36,589 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:36,589 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:36,589 - ERROR - Status Code: 404
+2026-02-20 17:56:36,589 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:36,589 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:36,786 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:36,786 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:36,786 - ERROR - Status Code: 404
+2026-02-20 17:56:36,786 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:36,786 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:36,786 - INFO - MercadoPagoId=485561: resultado devolución comprobante 1234568 => no confirmado.
+2026-02-20 17:56:36,786 - INFO - MercadoPagoId=485561: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:36,786 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:36,789 - INFO - MercadoPagoId=485562: IDs a devolver => 1234567.
+2026-02-20 17:56:36,789 - INFO - Procesando reembolso para el pago con ID: 1234567
+2026-02-20 17:56:37,305 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:37,305 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:37,305 - ERROR - Status Code: 404
+2026-02-20 17:56:37,305 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:37,305 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:37,503 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:37,503 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:37,503 - ERROR - Status Code: 404
+2026-02-20 17:56:37,503 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:37,503 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:37,503 - INFO - MercadoPagoId=485562: resultado devolución comprobante 1234567 => no confirmado.
+2026-02-20 17:56:37,503 - INFO - MercadoPagoId=485562: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:37,503 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:37,505 - INFO - MercadoPagoId=485565: IDs a devolver => 112407115517.
+2026-02-20 17:56:37,505 - INFO - Procesando reembolso para el pago con ID: 112407115517
+2026-02-20 17:56:38,233 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:38,415 - INFO - Revisando status del pago...
+2026-02-20 17:56:38,416 - INFO - Payment Status: refunded
+2026-02-20 17:56:38,416 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:38,416 - INFO - MercadoPagoId=485565: resultado devolución comprobante 112407115517 => confirmado.
+2026-02-20 17:56:38,438 - INFO - MercadoPagoId=485565: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:38,438 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:38,441 - INFO - MercadoPagoId=485566: IDs a devolver => 112407487155.
+2026-02-20 17:56:38,441 - INFO - Procesando reembolso para el pago con ID: 112407487155
+2026-02-20 17:56:39,148 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:39,329 - INFO - Revisando status del pago...
+2026-02-20 17:56:39,329 - INFO - Payment Status: refunded
+2026-02-20 17:56:39,329 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:39,329 - INFO - MercadoPagoId=485566: resultado devolución comprobante 112407487155 => confirmado.
+2026-02-20 17:56:39,345 - INFO - MercadoPagoId=485566: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:39,345 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:39,348 - INFO - MercadoPagoId=485570: IDs a devolver => 112416633237.
+2026-02-20 17:56:39,348 - INFO - Procesando reembolso para el pago con ID: 112416633237
+2026-02-20 17:56:40,096 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:40,295 - INFO - Revisando status del pago...
+2026-02-20 17:56:40,295 - INFO - Payment Status: refunded
+2026-02-20 17:56:40,295 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:40,295 - INFO - MercadoPagoId=485570: resultado devolución comprobante 112416633237 => confirmado.
+2026-02-20 17:56:40,311 - INFO - MercadoPagoId=485570: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:40,311 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:40,314 - INFO - MercadoPagoId=485571: IDs a devolver => 112432001233.
+2026-02-20 17:56:40,314 - INFO - Procesando reembolso para el pago con ID: 112432001233
+2026-02-20 17:56:40,775 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:40,775 - ERROR - Error: Error response from API. | Status code: 400 | API message: invalid_caller_id
+2026-02-20 17:56:40,775 - ERROR - Status Code: 400
+2026-02-20 17:56:40,775 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:40,775 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:40,953 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:40,953 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:40,953 - ERROR - Status Code: 404
+2026-02-20 17:56:40,953 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:40,953 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:40,953 - INFO - MercadoPagoId=485571: resultado devolución comprobante 112432001233 => no confirmado.
+2026-02-20 17:56:40,953 - INFO - MercadoPagoId=485571: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:40,953 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:40,954 - INFO - Maquina:54e7be19-80fa-43a8-b91d-0e35d749b583
+2026-02-20 17:56:40,955 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:40,957 - INFO - MercadoPagoId=485578: IDs a devolver => 1234568.
+2026-02-20 17:56:40,958 - INFO - Procesando reembolso para el pago con ID: 1234568
+2026-02-20 17:56:41,482 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:41,482 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:41,482 - ERROR - Status Code: 404
+2026-02-20 17:56:41,482 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:41,482 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:41,683 - ERROR - Se produjo un error con la API de Mercado Pago.
+2026-02-20 17:56:41,683 - ERROR - Error: Error response from API. | Status code: 404 | API message: Payment not found
+2026-02-20 17:56:41,683 - ERROR - Status Code: 404
+2026-02-20 17:56:41,683 - ERROR - Error de API: MercadoPago.Error.ApiError
+2026-02-20 17:56:41,683 - ERROR - Respuesta de API: MercadoPago.Http.MercadoPagoResponse
+2026-02-20 17:56:41,683 - INFO - MercadoPagoId=485578: resultado devolución comprobante 1234568 => no confirmado.
+2026-02-20 17:56:41,683 - INFO - MercadoPagoId=485578: devolución no confirmada para uno o más IDs, no se actualiza estado.
+2026-02-20 17:56:41,683 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:41,685 - INFO - MercadoPagoId=485582: IDs a devolver => 112956764821.
+2026-02-20 17:56:41,685 - INFO - Procesando reembolso para el pago con ID: 112956764821
+2026-02-20 17:56:42,419 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:42,598 - INFO - Revisando status del pago...
+2026-02-20 17:56:42,598 - INFO - Payment Status: refunded
+2026-02-20 17:56:42,598 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:42,598 - INFO - MercadoPagoId=485582: resultado devolución comprobante 112956764821 => confirmado.
+2026-02-20 17:56:42,618 - INFO - MercadoPagoId=485582: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:42,618 - INFO - Maquina:ee84c5d5-7a87-4596-b9af-67b845247e2e
+2026-02-20 17:56:42,621 - INFO - MercadoPagoId=485583: IDs a devolver => 112956877815.
+2026-02-20 17:56:42,621 - INFO - Procesando reembolso para el pago con ID: 112956877815
+2026-02-20 17:56:43,315 - INFO - Estado del reembolso: approved
+2026-02-20 17:56:43,492 - INFO - Revisando status del pago...
+2026-02-20 17:56:43,492 - INFO - Payment Status: refunded
+2026-02-20 17:56:43,492 - INFO - El pago ha sido reembolsado correctamente.
+2026-02-20 17:56:43,492 - INFO - MercadoPagoId=485583: resultado devolución comprobante 112956877815 => confirmado.
+2026-02-20 17:56:43,511 - INFO - MercadoPagoId=485583: devolución confirmada, se actualiza estado financiero/transmisión según patrón vigente.
+2026-02-20 17:56:43,511 - INFO - Maquina:
+2026-02-20 17:56:43,512 - ERROR - Non-static method requires a target.

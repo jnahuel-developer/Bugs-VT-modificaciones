@@ -1,0 +1,18 @@
+Pagos mixtos
+Llegan dos pagos, de manera temporal se guardan en la tabla MIXTAS
+se guarda en la tabla original (sumado)
+se envia por zocket (sumado)
+
+Hasta aca todo correcto
+
+
+--------------------------------
+
+Si no se puede entregar (motivos varios) se setean los ESTADOS FINANCIEROS Y TRANSMISION para que el STOCK NOTIFIER (ejecutable que corre en el TASK SCHEDURER cada 10 minutos) se encargue de devolverlo
+Como registramos solo un numero de operacion, solo devuelve esa parte, lo hace bien
+
+Como resolverlo ? que se te ocurre ?
+
+A mi se me ocurrio que se agregue un campo en la MPTABLE con el otro ID de operacion
+Y modificar el STOCK NOTIFIER para que se fije si hay dos ID y devuelva ambos
+

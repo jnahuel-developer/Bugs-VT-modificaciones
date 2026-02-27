@@ -3,9 +3,9 @@ GO
 
 -- Operación mixta debería quedar cerrada y con ApprovedCount=2, MontoAcumulado=430.00
 SELECT TOP (10)
-    MercadoPagoOperacionMixtaId, OperadorId, ExternalReference, FechaAuthorizedUtc,
-    MontoAcumulado, ApprovedCount, PaymentId1, PaymentId2, Cerrada, FechaCierreUtc,
-    FechaUltimaActualizacionUtc
+    MercadoPagoOperacionMixtaId, OperadorId, ExternalReference, FechaAuthorized,
+    MontoAcumulado, ApprovedCount, PaymentId1, PaymentId2, Cerrada, FechaCierre,
+    FechaUltimaActualizacion
 FROM dbo.MercadoPagoOperacionMixta
 ORDER BY MercadoPagoOperacionMixtaId DESC;
 

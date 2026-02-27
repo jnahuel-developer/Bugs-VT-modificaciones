@@ -1,0 +1,25 @@
+2026-02-26 14:21:37,734 - DEBUG - Executing Controller: BugsMVC.Controllers.AccountController Action: Login Parameters: Key: returnUrl Value: / Key: returnUrl Value:  Url: http://localhost:8765/Account/Login?ReturnUrl=%2F
+2026-02-26 14:21:37,755 - DEBUG - Executed Controller: BugsMVC.Controllers.AccountController Action: Login
+2026-02-26 14:21:52,496 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 101 Key: operador Value: Key: topic Value: payment Key: topic Value: Key: id Value: 1772126509771 Key: id Value:  Url: http://localhost:8765/PagosMP?operador=101&topic=payment&id=1772126509771
+2026-02-26 14:21:52,502 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 14:21:52,517 - INFO - DEV | IPN recibida | topic=payment | id=1772126509771 | operador=101 | version=1.1.4
+2026-02-26 14:21:52,517 - INFO - DEV | AmbienteSimuladoresHabilitado=True
+2026-02-26 14:21:52,517 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 14:21:52,797 - INFO - DEV | Operador resuelto | OperadorId=11111111-1111-1111-1111-111111111111 | Numero=101 | Nombre=Dario Conca | id=1772126509771
+2026-02-26 14:21:52,839 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 1772126509771, operador=101, version=1.1.4
+2026-02-26 14:21:52,874 - INFO - [1772126509771] - Esperando turno en la fila para obtener payment...
+2026-02-26 14:21:52,874 - INFO - [1772126509771] - Intentando obtener información de payment...
+2026-02-26 14:21:52,913 - INFO - DEV | Payment obtenido | id=1772126509771 | status=approved | amount=150,0 | ext_ref=BGSQR_0001 | currency=ARS | method=debvisa | fuente=mp_simulator
+2026-02-26 14:21:52,913 - INFO - [1772126509771] - finalizada fila de payment.
+2026-02-26 14:21:52,913 - INFO - [1772126509771] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 14:21:52,913 - INFO - [1772126509771] - External Reference: BGSQR_0001,Monto:150,0
+2026-02-26 14:21:52,913 - INFO - [1772126509771] - CurrencyId: ARS
+2026-02-26 14:21:52,913 - INFO - [1772126509771] - Payment Method: debvisa
+2026-02-26 14:21:52,913 - INFO - [1772126509771] - External Reference Actualizado: BGSQR_0001 para el operador: Dario Conca
+2026-02-26 14:21:52,968 - INFO - DEV | Clasificación | tipo=simple | motivo=no hay operación mixta pendiente | id=1772126509771 | ext_ref=BGSQR_0001
+2026-02-26 14:21:53,059 - INFO - DEV | MercadoPagoTable insert | tipo=simple | comprobante=1772126509771 | monto=150,0 | maquinaId=88888888-8888-8888-8888-888888888888 | estados=2/1
+2026-02-26 14:21:53,275 - INFO - [1772126509771] - Enviando pago a máquina...
+2026-02-26 14:21:53,276 - INFO - [1772126509771] - Intento 1 de 3 para enviar pago a máquina 88888888-8888-8888-8888-888888888888
+2026-02-26 14:21:53,277 - INFO - [1772126509771] - Enviado correctamente a máquina: 88888888-8888-8888-8888-888888888888
+2026-02-26 14:21:53,277 - INFO - [1772126509771] - Finalizó envío a máquina.
+2026-02-26 14:21:53,278 - INFO - [1772126509771] - Finalizó el proceso de RegistrarPago.

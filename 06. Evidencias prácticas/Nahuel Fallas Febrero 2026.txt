@@ -1,0 +1,109 @@
+1) cuando quiero publicar la solucion da error porque no encuentra el file itextSharp.dll, se lo agregue donde lo pedia \BugsMVC\BugsMVC y ahora funciona, no se porque se Habra perdido en tu repositorio.
+
+2) en el log del stock notifier aparece:
+2026-02-12 11:59:39,511 - INFO - Control Devoluciones Mixtas Parciales
+pero aparece luego de haber echo la devolucion del pago mixto, pareceria que no hubo devolucion de pago mixto, no entiendo si esta de mas o mal ubicado en el log
+no es que quiera que hagas algo al respecto pero no e si eso esta correcto o es un error...
+ver adjunto del log del stock notifier
+
+3) Si hay un pago ya realizado con un external reference xxx en la tabla de mixtas, y pago nuevamente con ese mismo qr (mismo external reference) no lo registra, pasa como si no fuera mixto
+
+4) viendo pagos mixtos reales, en produccion (con el soft de version original) veo que aparecen casos que no se aprueba la tarjeta o algo asi y la operacion se descarta, debes tener en cuenta estas posibilidades.
+Te dejo algunas capturas
+
+Caso 1
+AUTHORIZED-REJECTERD-CANCELLED
+--------------
+2026-01-22 20:44:48,649 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 13 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 143139746762 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=143139746762&operador=13&topic=payment
+2026-01-22 20:44:48,649 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-22 20:44:48,649 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 143139746762, operador=13, version=1.1.6
+2026-01-22 20:44:48,774 - INFO - [143139746762] - Esperando turno en la fila para obtener payment...
+2026-01-22 20:44:48,774 - INFO - [143139746762] - Intentando obtener información de payment...
+2026-01-22 20:44:49,571 - INFO - [143139746762] - finalizada fila de payment.
+2026-01-22 20:44:49,571 - INFO - [143139746762] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-22 20:44:49,571 - ERROR - [143139746762] - Mercado Pago status: authorized
+2026-01-22 20:44:49,571 - INFO - [143139746762] - Finalizó el proceso de RegistrarPago.
+
+2026-01-22 20:44:51,649 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 13 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 143139806188 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=143139806188&operador=13&topic=payment
+2026-01-22 20:44:51,649 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-22 20:44:51,649 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 143139806188, operador=13, version=1.1.6
+2026-01-22 20:44:51,774 - INFO - [143139806188] - Esperando turno en la fila para obtener payment...
+2026-01-22 20:44:51,774 - INFO - [143139806188] - Intentando obtener información de payment...
+2026-01-22 20:44:51,961 - INFO - [143139806188] - finalizada fila de payment.
+2026-01-22 20:44:51,961 - INFO - [143139806188] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-22 20:44:51,961 - ERROR - [143139806188] - Mercado Pago status: rejected
+2026-01-22 20:44:51,961 - INFO - [143139806188] - Finalizó el proceso de RegistrarPago.
+
+2026-01-22 20:44:51,946 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 13 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 143139746762 Key: id Value:                                               Url: https://vt2.bugssa.com.ar/PagosMP/?id=143139746762&operador=13&topic=payment
+2026-01-22 20:44:51,946 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-22 20:44:52,086 - INFO - [143139746762] - Esperando turno en la fila para obtener payment...
+2026-01-22 20:44:51,946 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 143139746762, operador=13, version=1.1.6
+2026-01-22 20:44:52,086 - INFO - [143139746762] - Intentando obtener información de payment...
+2026-01-22 20:44:52,258 - INFO - [143139746762] - finalizada fila de payment.
+2026-01-22 20:44:52,258 - INFO - [143139746762] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-22 20:44:52,258 - ERROR - [143139746762] - Mercado Pago status: cancelled
+2026-01-22 20:44:52,258 - INFO - [143139746762] - Finalizó el proceso de RegistrarPago.
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+Caso 2
+
+2026-01-23 11:11:08,518 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 142532916215 Key: id Value:                                               Url: https://vt.bugssa.com.ar/PagosMP/?id=142532916215&operador=3&topic=payment
+2026-01-23 11:11:08,518 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-23 11:11:08,518 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 142532916215, operador=3, version=1.1.6
+2026-01-23 11:11:08,658 - INFO - [142532916215] - Esperando turno en la fila para obtener payment...
+2026-01-23 11:11:08,658 - INFO - [142532916215] - Intentando obtener información de payment...
+2026-01-23 11:11:08,846 - INFO - [142532916215] - finalizada fila de payment.
+2026-01-23 11:11:08,846 - INFO - [142532916215] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-23 11:11:08,846 - ERROR - [142532916215] - Mercado Pago status: authorized
+2026-01-23 11:11:08,846 - INFO - [142532916215] - Finalizó el proceso de RegistrarPago.
+
+2026-01-23 11:11:12,721 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 142532780059 Key: id Value:                                               Url: https://vt.bugssa.com.ar/PagosMP/?id=142532780059&operador=3&topic=payment
+2026-01-23 11:11:12,721 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-23 11:11:12,721 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 142532780059, operador=3, version=1.1.6
+2026-01-23 11:11:12,862 - INFO - [142532780059] - Esperando turno en la fila para obtener payment...
+2026-01-23 11:11:12,862 - INFO - [142532780059] - Intentando obtener información de payment...
+2026-01-23 11:11:13,049 - INFO - [142532780059] - finalizada fila de payment.
+2026-01-23 11:11:13,049 - INFO - [142532780059] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-23 11:11:13,049 - ERROR - [142532780059] - Mercado Pago status: rejected
+2026-01-23 11:11:13,049 - INFO - [142532780059] - Finalizó el proceso de RegistrarPago.
+
+
+2026-01-23 11:11:14,205 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 142532916215 Key: id Value:                                               Url: https://vt.bugssa.com.ar/PagosMP/?id=142532916215&operador=3&topic=payment
+2026-01-23 11:11:14,205 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-23 11:11:14,205 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 142532916215, operador=3, version=1.1.6
+2026-01-23 11:11:14,346 - INFO - [142532916215] - Esperando turno en la fila para obtener payment...
+2026-01-23 11:11:14,346 - INFO - [142532916215] - Intentando obtener información de payment...
+2026-01-23 11:11:14,534 - INFO - [142532916215] - finalizada fila de payment.
+2026-01-23 11:11:14,534 - INFO - [142532916215] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-23 11:11:14,534 - ERROR - [142532916215] - Mercado Pago status: cancelled
+2026-01-23 11:11:14,534 - INFO - [142532916215] - Finalizó el proceso de RegistrarPago.
+
+-------------------------------------------------------------------------------------------------
+Caso 3
+
+2026-01-23 11:15:45,003 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 143206101722 Key: id Value:                                               Url: https://vt.bugssa.com.ar/PagosMP/?id=143206101722&operador=3&topic=payment
+2026-01-23 11:15:45,003 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-23 11:15:45,018 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 143206101722, operador=3, version=1.1.6
+2026-01-23 11:15:45,144 - INFO - [143206101722] - Esperando turno en la fila para obtener payment...
+2026-01-23 11:15:45,144 - INFO - [143206101722] - Intentando obtener información de payment...
+2026-01-23 11:15:45,331 - INFO - [143206101722] - finalizada fila de payment.
+2026-01-23 11:15:45,331 - INFO - [143206101722] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-23 11:15:45,331 - ERROR - [143206101722] - Mercado Pago status: authorized
+2026-01-23 11:15:45,331 - INFO - [143206101722] - Finalizó el proceso de RegistrarPago.
+
+2026-01-23 11:15:47,878 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 3 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 142533590211 Key: id Value:                                               Url: https://vt.bugssa.com.ar/PagosMP/?id=142533590211&operador=3&topic=payment
+2026-01-23 11:15:47,878 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-01-23 11:15:47,878 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 142533590211, operador=3, version=1.1.6
+2026-01-23 11:15:48,034 - INFO - [142533590211] - Esperando turno en la fila para obtener payment...
+2026-01-23 11:15:48,034 - INFO - [142533590211] - Intentando obtener información de payment...
+2026-01-23 11:15:48,222 - INFO - [142533590211] - finalizada fila de payment.
+2026-01-23 11:15:48,222 - INFO - [142533590211] - El pago fue encontrado y se encuentra procesando los datos
+2026-01-23 11:15:48,222 - ERROR - [142533590211] - Mercado Pago status: rejected
+2026-01-23 11:15:48,222 - INFO - [142533590211] - Finalizó el proceso de RegistrarPago.
+
+---------------------------------------------------------------------------------------------------------------------
+
+
+
+

@@ -1,0 +1,84 @@
+2026-02-26 14:25:10,213 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 101 Key: operador Value: Key: topic Value: payment Key: topic Value: Key: id Value: 1772126704689 Key: id Value:  Url: http://localhost:8765/PagosMP?operador=101&topic=payment&id=1772126704689
+2026-02-26 14:25:10,213 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 14:25:10,213 - INFO - DEV | IPN recibida | topic=payment | id=1772126704689 | operador=101 | version=1.1.4
+2026-02-26 14:25:10,213 - INFO - DEV | AmbienteSimuladoresHabilitado=True
+2026-02-26 14:25:10,213 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 14:25:10,215 - INFO - DEV | Operador resuelto | OperadorId=11111111-1111-1111-1111-111111111111 | Numero=101 | Nombre=Dario Conca | id=1772126704689
+2026-02-26 14:25:10,216 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 1772126704689, operador=101, version=1.1.4
+2026-02-26 14:25:10,218 - INFO - [1772126704689] - Esperando turno en la fila para obtener payment...
+2026-02-26 14:25:10,218 - INFO - [1772126704689] - Intentando obtener información de payment...
+2026-02-26 14:25:10,223 - INFO - DEV | Payment obtenido | id=1772126704689 | status=authorized | amount=4589,15 | ext_ref=BGSQR_0001 | currency=ARS | method=account_money | fuente=mp_simulator
+2026-02-26 14:25:10,223 - INFO - [1772126704689] - finalizada fila de payment.
+2026-02-26 14:25:10,223 - INFO - [1772126704689] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 14:25:10,223 - INFO - DEV | Mixto | evento=authorized
+2026-02-26 14:25:10,223 - INFO - [1772126704689] - External Reference: BGSQR_0001,Monto:4589,15
+2026-02-26 14:25:10,223 - INFO - [1772126704689] - CurrencyId: ARS
+2026-02-26 14:25:10,223 - INFO - [1772126704689] - Payment Method: account_money
+2026-02-26 14:25:10,223 - INFO - DEV | Mixto | evento=authorized | ext_ref=BGSQR_0001 | acción=crear/actualizar pendiente
+2026-02-26 14:25:10,229 - INFO - DEV | Mixto | evento=authorized | ext_ref=BGSQR_0001 | acción=creada pendiente
+2026-02-26 14:25:10,229 - INFO - [1772126704689] - Finalizó el proceso de RegistrarPago.
+2026-02-26 14:25:13,964 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 101 Key: operador Value: Key: topic Value: payment Key: topic Value: Key: id Value: 1772126704690 Key: id Value:  Url: http://localhost:8765/PagosMP?operador=101&topic=payment&id=1772126704690
+2026-02-26 14:25:13,964 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 14:25:13,964 - INFO - DEV | IPN recibida | topic=payment | id=1772126704690 | operador=101 | version=1.1.4
+2026-02-26 14:25:13,964 - INFO - DEV | AmbienteSimuladoresHabilitado=True
+2026-02-26 14:25:13,964 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 14:25:13,966 - INFO - DEV | Operador resuelto | OperadorId=11111111-1111-1111-1111-111111111111 | Numero=101 | Nombre=Dario Conca | id=1772126704690
+2026-02-26 14:25:13,967 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 1772126704690, operador=101, version=1.1.4
+2026-02-26 14:25:13,969 - INFO - [1772126704690] - Esperando turno en la fila para obtener payment...
+2026-02-26 14:25:13,969 - INFO - [1772126704690] - Intentando obtener información de payment...
+2026-02-26 14:25:13,973 - INFO - DEV | Payment obtenido | id=1772126704690 | status=approved | amount=910,85 | ext_ref=BGSQR_0001 | currency=ARS | method=master | fuente=mp_simulator
+2026-02-26 14:25:13,973 - INFO - [1772126704690] - finalizada fila de payment.
+2026-02-26 14:25:13,973 - INFO - [1772126704690] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 14:25:13,973 - INFO - [1772126704690] - External Reference: BGSQR_0001,Monto:910,85
+2026-02-26 14:25:13,973 - INFO - [1772126704690] - CurrencyId: ARS
+2026-02-26 14:25:13,973 - INFO - [1772126704690] - Payment Method: master
+2026-02-26 14:25:13,974 - INFO - [1772126704690] - External Reference Actualizado: BGSQR_0001 para el operador: Dario Conca
+2026-02-26 14:25:13,978 - INFO - DEV | Clasificación | tipo=mixto | MercadoPagoOperacionMixtaId=14 | id=1772126704690 | ext_ref=BGSQR_0001
+2026-02-26 14:25:13,978 - INFO - DEV | Mixto | evento=approved | id=1772126704690 | ext_ref=BGSQR_0001 | monto=910,85 | estado_previo: ApprovedCount=0 MontoAcumulado=0,00 PaymentId1= PaymentId2=
+2026-02-26 14:25:13,978 - INFO - DEV | Mixto | asignación | campo=PaymentId1 | valor=1772126704690
+2026-02-26 14:25:13,978 - INFO - DEV | Mixto | pendiente incompleta | motivo=falta segunda parte | ApprovedCount=1 | MontoAcumulado=910,85
+2026-02-26 14:25:13,981 - INFO - [1772126704690] - Finalizó el proceso de RegistrarPago.
+2026-02-26 14:25:15,034 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 101 Key: operador Value: Key: topic Value: payment Key: topic Value: Key: id Value: 1772126704690 Key: id Value:  Url: http://localhost:8765/PagosMP?operador=101&topic=payment&id=1772126704690
+2026-02-26 14:25:15,034 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 14:25:15,034 - INFO - DEV | IPN recibida | topic=payment | id=1772126704690 | operador=101 | version=1.1.4
+2026-02-26 14:25:15,034 - INFO - DEV | AmbienteSimuladoresHabilitado=True
+2026-02-26 14:25:15,034 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 14:25:15,036 - INFO - DEV | Operador resuelto | OperadorId=11111111-1111-1111-1111-111111111111 | Numero=101 | Nombre=Dario Conca | id=1772126704690
+2026-02-26 14:25:15,038 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 1772126704690, operador=101, version=1.1.4
+2026-02-26 14:25:15,039 - INFO - [1772126704690] - Esperando turno en la fila para obtener payment...
+2026-02-26 14:25:15,039 - INFO - [1772126704690] - Intentando obtener información de payment...
+2026-02-26 14:25:15,044 - INFO - DEV | Payment obtenido | id=1772126704690 | status=approved | amount=910,85 | ext_ref=BGSQR_0001 | currency=ARS | method=master | fuente=mp_simulator
+2026-02-26 14:25:15,044 - INFO - [1772126704690] - finalizada fila de payment.
+2026-02-26 14:25:15,044 - INFO - [1772126704690] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 14:25:15,044 - INFO - [1772126704690] - External Reference: BGSQR_0001,Monto:910,85
+2026-02-26 14:25:15,044 - INFO - [1772126704690] - CurrencyId: ARS
+2026-02-26 14:25:15,044 - INFO - [1772126704690] - Payment Method: master
+2026-02-26 14:25:15,044 - INFO - [1772126704690] - External Reference Actualizado: BGSQR_0001 para el operador: Dario Conca
+2026-02-26 14:25:15,046 - INFO - [1772126704690] - Payment ya procesado para operación mixta, descartando duplicado.
+2026-02-26 14:25:15,046 - INFO - [1772126704690] - Finalizó el proceso de RegistrarPago.
+2026-02-26 14:25:17,626 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 101 Key: operador Value: Key: topic Value: payment Key: topic Value: Key: id Value: 1772126704689 Key: id Value:  Url: http://localhost:8765/PagosMP?operador=101&topic=payment&id=1772126704689
+2026-02-26 14:25:17,627 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 14:25:17,627 - INFO - DEV | IPN recibida | topic=payment | id=1772126704689 | operador=101 | version=1.1.4
+2026-02-26 14:25:17,627 - INFO - DEV | AmbienteSimuladoresHabilitado=True
+2026-02-26 14:25:17,627 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 14:25:17,628 - INFO - DEV | Operador resuelto | OperadorId=11111111-1111-1111-1111-111111111111 | Numero=101 | Nombre=Dario Conca | id=1772126704689
+2026-02-26 14:25:17,630 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 1772126704689, operador=101, version=1.1.4
+2026-02-26 14:25:17,631 - INFO - [1772126704689] - Esperando turno en la fila para obtener payment...
+2026-02-26 14:25:17,631 - INFO - [1772126704689] - Intentando obtener información de payment...
+2026-02-26 14:25:17,636 - INFO - DEV | Payment obtenido | id=1772126704689 | status=approved | amount=4589,15 | ext_ref=BGSQR_0001 | currency=ARS | method=account_money | fuente=mp_simulator
+2026-02-26 14:25:17,636 - INFO - [1772126704689] - finalizada fila de payment.
+2026-02-26 14:25:17,636 - INFO - [1772126704689] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 14:25:17,636 - INFO - [1772126704689] - External Reference: BGSQR_0001,Monto:4589,15
+2026-02-26 14:25:17,636 - INFO - [1772126704689] - CurrencyId: ARS
+2026-02-26 14:25:17,636 - INFO - [1772126704689] - Payment Method: account_money
+2026-02-26 14:25:17,636 - INFO - [1772126704689] - External Reference Actualizado: BGSQR_0001 para el operador: Dario Conca
+2026-02-26 14:25:17,640 - INFO - DEV | Clasificación | tipo=mixto | MercadoPagoOperacionMixtaId=14 | id=1772126704689 | ext_ref=BGSQR_0001
+2026-02-26 14:25:17,640 - INFO - DEV | Mixto | evento=approved | id=1772126704689 | ext_ref=BGSQR_0001 | monto=4589,15 | estado_previo: ApprovedCount=1 MontoAcumulado=910,85 PaymentId1=1772126704690 PaymentId2=
+2026-02-26 14:25:17,640 - INFO - DEV | Mixto | asignación | campo=PaymentId2 | valor=1772126704689
+2026-02-26 14:25:17,640 - INFO - DEV | Mixto | pendiente completa | PaymentId1=1772126704690 | PaymentId2=1772126704689 | MontoAcumulado=5500,00 | ApprovedCount=2
+2026-02-26 14:25:17,644 - INFO - DEV | MercadoPagoTable insert | tipo=mixto | comprobante=1772126704689 | monto=5500,00 | maquinaId=88888888-8888-8888-8888-888888888888 | estados=2/1
+2026-02-26 14:25:17,649 - INFO - [1772126704689] - Enviando pago a máquina...
+2026-02-26 14:25:17,649 - INFO - [1772126704689] - Intento 1 de 3 para enviar pago a máquina 88888888-8888-8888-8888-888888888888
+2026-02-26 14:25:17,650 - INFO - [1772126704689] - Enviado correctamente a máquina: 88888888-8888-8888-8888-888888888888
+2026-02-26 14:25:17,650 - INFO - [1772126704689] - Finalizó envío a máquina.
+2026-02-26 14:25:17,650 - INFO - [1772126704689] - Finalizó el proceso de RegistrarPago.

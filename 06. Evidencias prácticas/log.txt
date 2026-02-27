@@ -1,0 +1,145 @@
+
+********************************************************
+pago simple por $15, correcto
+-----------------------------------
+2026-02-26 15:06:48,667 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147253796057 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147253796057&operador=5&topic=payment
+2026-02-26 15:06:48,682 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:06:48,749 - INFO - DEV | IPN recibida | topic=payment | id=147253796057 | operador=5 | version=1.1.5
+2026-02-26 15:06:48,749 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:06:48,749 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:06:48,829 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147253796057
+2026-02-26 15:06:48,881 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147253796057, operador=5, version=1.1.5
+2026-02-26 15:06:48,982 - INFO - [147253796057] - Esperando turno en la fila para obtener payment...
+2026-02-26 15:06:48,982 - INFO - [147253796057] - Intentando obtener información de payment...
+2026-02-26 15:06:51,124 - INFO - DEV | Payment obtenido | id=147253796057 | status=approved | amount=15 | ext_ref=BGSQR_05500 | currency=ARS | method=debvisa | fuente=sdk
+2026-02-26 15:06:51,124 - INFO - [147253796057] - finalizada fila de payment.
+2026-02-26 15:06:51,124 - INFO - [147253796057] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 15:06:51,124 - INFO - [147253796057] - External Reference: BGSQR_05500,Monto:15
+2026-02-26 15:06:51,124 - INFO - [147253796057] - CurrencyId: ARS
+2026-02-26 15:06:51,124 - INFO - [147253796057] - Payment Method: debvisa
+2026-02-26 15:06:51,124 - INFO - [147253796057] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-26 15:06:51,226 - INFO - DEV | Clasificación | tipo=simple | motivo=no hay operación mixta pendiente | id=147253796057 | ext_ref=BGSQR_05500
+2026-02-26 15:06:51,445 - INFO - DEV | MercadoPagoTable insert | tipo=simple | comprobante=147253796057 | monto=15 | maquinaId=8e644abc-fd03-471b-9650-3dc8ab6ba346 | estados=2/1
+2026-02-26 15:06:51,860 - INFO - [147253796057] - Enviando pago a máquina...
+2026-02-26 15:06:51,861 - INFO - [147253796057] - Intento 1 de 3 para enviar pago a máquina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+
+inicio de lo que se genera por hacer la devolucion del pago de $15.-
+----------------------------------------------------------------------
+2026-02-26 15:08:29,887 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147253796057 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147253796057&operador=5&topic=payment
+2026-02-26 15:08:29,887 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:08:29,887 - INFO - DEV | IPN recibida | topic=payment | id=147253796057 | operador=5 | version=1.1.5
+2026-02-26 15:08:29,887 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:08:29,887 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:08:29,889 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147253796057
+2026-02-26 15:08:29,891 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147253796057, operador=5, version=1.1.5
+2026-02-26 15:08:29,935 - INFO - [147253796057] - La notificación ya fue recibida y procesada anteriormente
+2026-02-26 15:08:29,936 - INFO - [147253796057] - Finalizó el proceso de RegistrarPago.
+
+2026-02-26 15:08:36,847 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147253796057 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147253796057&operador=5&topic=payment
+2026-02-26 15:08:36,847 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:08:36,847 - INFO - DEV | IPN recibida | topic=payment | id=147253796057 | operador=5 | version=1.1.5
+2026-02-26 15:08:36,847 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:08:36,847 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:08:36,849 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147253796057
+2026-02-26 15:08:36,850 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147253796057, operador=5, version=1.1.5
+2026-02-26 15:08:36,917 - INFO - [147253796057] - La notificación ya fue recibida y procesada anteriormente
+2026-02-26 15:08:36,918 - INFO - [147253796057] - Finalizó el proceso de RegistrarPago.
+
+2026-02-26 15:08:52,156 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147253796057 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147253796057&operador=5&topic=payment
+2026-02-26 15:08:52,156 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:08:52,156 - INFO - DEV | IPN recibida | topic=payment | id=147253796057 | operador=5 | version=1.1.5
+2026-02-26 15:08:52,156 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:08:52,156 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:08:52,158 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147253796057
+2026-02-26 15:08:52,159 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147253796057, operador=5, version=1.1.5
+2026-02-26 15:08:52,194 - INFO - [147253796057] - La notificación ya fue recibida y procesada anteriormente
+2026-02-26 15:08:52,194 - INFO - [147253796057] - Finalizó el proceso de RegistrarPago.
+fin de lo que se genera por hacer la devolucion
+****************************************************
+
+
+********************************************************
+pago mixto por $3350, correcto
+-----------------------------------
+autorizacion
+2026-02-26 15:13:29,166 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147254659151 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147254659151&operador=5&topic=payment
+2026-02-26 15:13:29,166 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:13:29,166 - INFO - DEV | IPN recibida | topic=payment | id=147254659151 | operador=5 | version=1.1.5
+2026-02-26 15:13:29,166 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:13:29,166 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:13:29,169 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147254659151
+2026-02-26 15:13:29,170 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147254659151, operador=5, version=1.1.5
+2026-02-26 15:13:29,211 - INFO - [147254659151] - Esperando turno en la fila para obtener payment...
+2026-02-26 15:13:29,211 - INFO - [147254659151] - Intentando obtener información de payment...
+2026-02-26 15:13:30,890 - INFO - DEV | Payment obtenido | id=147254659151 | status=authorized | amount=3300.11 | ext_ref=BGSQR_05500 | currency=ARS | method=account_money | fuente=sdk
+2026-02-26 15:13:30,890 - INFO - [147254659151] - finalizada fila de payment.
+2026-02-26 15:13:30,890 - INFO - [147254659151] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 15:13:30,890 - INFO - DEV | Mixto | evento=authorized
+2026-02-26 15:13:30,890 - INFO - [147254659151] - External Reference: BGSQR_05500,Monto:3300.11
+2026-02-26 15:13:30,890 - INFO - [147254659151] - CurrencyId: ARS
+2026-02-26 15:13:30,890 - INFO - [147254659151] - Payment Method: account_money
+2026-02-26 15:13:30,890 - INFO - DEV | Mixto | evento=authorized | ext_ref=BGSQR_05500 | acción=crear/actualizar pendiente
+2026-02-26 15:13:30,935 - INFO - DEV | Mixto | evento=authorized | ext_ref=BGSQR_05500 | acción=creada pendiente
+2026-02-26 15:13:30,938 - INFO - [147254659151] - Finalizó el proceso de RegistrarPago.
+
+parte del pago con tarjeta, correcto
+2026-02-26 15:13:32,007 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147963027164 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147963027164&operador=5&topic=payment
+2026-02-26 15:13:32,007 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:13:32,007 - INFO - DEV | IPN recibida | topic=payment | id=147963027164 | operador=5 | version=1.1.5
+2026-02-26 15:13:32,007 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:13:32,008 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:13:32,009 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147963027164
+2026-02-26 15:13:32,011 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147963027164, operador=5, version=1.1.5
+2026-02-26 15:13:32,052 - INFO - [147963027164] - Esperando turno en la fila para obtener payment...
+2026-02-26 15:13:32,052 - INFO - [147963027164] - Intentando obtener información de payment...
+2026-02-26 15:13:32,251 - INFO - DEV | Payment obtenido | id=147963027164 | status=approved | amount=49.89 | ext_ref=BGSQR_05500 | currency=ARS | method=debvisa | fuente=sdk
+2026-02-26 15:13:32,251 - INFO - [147963027164] - finalizada fila de payment.
+2026-02-26 15:13:32,251 - INFO - [147963027164] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 15:13:32,251 - INFO - [147963027164] - External Reference: BGSQR_05500,Monto:49.89
+2026-02-26 15:13:32,251 - INFO - [147963027164] - CurrencyId: ARS
+2026-02-26 15:13:32,251 - INFO - [147963027164] - Payment Method: debvisa
+2026-02-26 15:13:32,251 - INFO - [147963027164] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-26 15:13:32,256 - INFO - DEV | Clasificación | tipo=mixto | MercadoPagoOperacionMixtaId=5 | id=147963027164 | ext_ref=BGSQR_05500
+2026-02-26 15:13:32,257 - INFO - DEV | Mixto | evento=approved | id=147963027164 | ext_ref=BGSQR_05500 | monto=49.89 | estado_previo: ApprovedCount=0 MontoAcumulado=0.00 PaymentId1= PaymentId2=
+2026-02-26 15:13:32,258 - INFO - DEV | Mixto | asignación | campo=PaymentId1 | valor=147963027164
+2026-02-26 15:13:32,258 - INFO - DEV | Mixto | pendiente incompleta | motivo=falta segunda parte | ApprovedCount=1 | MontoAcumulado=49.89
+2026-02-26 15:13:32,280 - INFO - [147963027164] - Finalizó el proceso de RegistrarPago.
+
+parte del pago con dinero en cuenta, correcto
+2026-02-26 15:13:32,651 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147254659151 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147254659151&operador=5&topic=payment
+2026-02-26 15:13:32,651 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:13:32,651 - INFO - DEV | IPN recibida | topic=payment | id=147254659151 | operador=5 | version=1.1.5
+2026-02-26 15:13:32,651 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:13:32,651 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:13:32,653 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147254659151
+2026-02-26 15:13:32,654 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147254659151, operador=5, version=1.1.5
+2026-02-26 15:13:32,696 - INFO - [147254659151] - Esperando turno en la fila para obtener payment...
+2026-02-26 15:13:32,697 - INFO - [147254659151] - Intentando obtener información de payment...
+2026-02-26 15:13:32,886 - INFO - DEV | Payment obtenido | id=147254659151 | status=approved | amount=3300.11 | ext_ref=BGSQR_05500 | currency=ARS | method=account_money | fuente=sdk
+2026-02-26 15:13:32,886 - INFO - [147254659151] - finalizada fila de payment.
+2026-02-26 15:13:32,886 - INFO - [147254659151] - El pago fue encontrado y se encuentra procesando los datos
+2026-02-26 15:13:32,886 - INFO - [147254659151] - External Reference: BGSQR_05500,Monto:3300.11
+2026-02-26 15:13:32,886 - INFO - [147254659151] - CurrencyId: ARS
+2026-02-26 15:13:32,886 - INFO - [147254659151] - Payment Method: account_money
+2026-02-26 15:13:32,886 - INFO - [147254659151] - External Reference Actualizado: BGSQR_05500 para el operador: Bugs Taller
+2026-02-26 15:13:32,891 - INFO - DEV | Clasificación | tipo=mixto | MercadoPagoOperacionMixtaId=5 | id=147254659151 | ext_ref=BGSQR_05500
+2026-02-26 15:13:32,891 - INFO - DEV | Mixto | evento=approved | id=147254659151 | ext_ref=BGSQR_05500 | monto=3300.11 | estado_previo: ApprovedCount=1 MontoAcumulado=49.89 PaymentId1=147963027164 PaymentId2=
+2026-02-26 15:13:32,891 - INFO - DEV | Mixto | asignación | campo=PaymentId2 | valor=147254659151
+2026-02-26 15:13:32,891 - INFO - DEV | Mixto | pendiente completa | PaymentId1=147963027164 | PaymentId2=147254659151 | MontoAcumulado=3350.00 | ApprovedCount=2
+2026-02-26 15:13:32,897 - INFO - DEV | MercadoPagoTable insert | tipo=mixto | comprobante=147254659151 | monto=3350.00 | maquinaId=8e644abc-fd03-471b-9650-3dc8ab6ba346 | estados=2/1
+2026-02-26 15:13:32,907 - INFO - [147254659151] - Enviando pago a máquina...
+2026-02-26 15:13:32,907 - INFO - [147254659151] - Intento 1 de 3 para enviar pago a máquina 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-26 15:13:32,910 - INFO - [147253796057] - Enviado correctamente a máquina: 8e644abc-fd03-471b-9650-3dc8ab6ba346
+2026-02-26 15:13:32,910 - INFO - [147253796057] - Finalizó envío a máquina.
+2026-02-26 15:13:32,910 - INFO - [147253796057] - Finalizó el proceso de RegistrarPago.
+
+no se que es esto
+2026-02-26 15:13:34,186 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147254659151 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147254659151&operador=5&topic=payment
+2026-02-26 15:13:34,186 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:13:34,186 - INFO - DEV | IPN recibida | topic=payment | id=147254659151 | operador=5 | version=1.1.5
+2026-02-26 15:13:34,186 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:13:34,186 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:13:34,188 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147254659151
+2026-02-26 15:13:34,189 - INFO - Llega notificacion de pago al sistema: topic= payment, id= 147254659151, operador=5, version=1.1.5
+2026-02-26 15:13:34,231 - INFO - [147254659151] - La notificación ya fue recibida y procesada anteriormente
+2026-02-26 15:13:34,231 - INFO - [147254659151] - Finalizó el proceso de RegistrarPago.

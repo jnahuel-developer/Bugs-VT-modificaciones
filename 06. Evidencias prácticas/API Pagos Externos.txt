@@ -1,0 +1,21 @@
+4.3. Persistencia de external_reference
+Para cumplir el campo id_caja del contrato, se requirió persistir el external_reference asociado al pago. Se decidió utilizar la columna MercadoPagoTable.Descripcion, donde el valor se
+guarda al momento de registrar el pago en el controlador de Mercado Pago.
+
+Ese campo no me dice nada, todo se refiere al nombre de CAJA (id caja mp) ya que es lo que el cliente ve en la web de MP, en los qr impresos, etc.
+Cuando los pagos son enviados por error (pagan con transferencias, no dan de alta los qr como corresponde, etc.) y no existe el EXTERNAL_REFERENCE valido, se asocia a un ESTADO FINANCIERO / TRANSMISION NO PROCESABLE/NO PROCESABLE, que solo se usa para que se aviven que lo están haciendo mal.
+En este caso, podemos NO ENVIAR ESTE REGISTRO en esas condiciones.
+
+Esto salva el problema que mencionas ?
+
+
+-----------------------------------
+maquina Maquina.NombreAlias /
+NumeroSerie
+Se prioriza NombreAlias. Si se encuentra vacío, se utiliza NumeroSerie.
+En su defecto, se utiliza MaquinaID.
+
+
+el nombre alias nadie lo usa como corresponde, debe usar el numero de serie, no otra cosa
+
+-------------------------------------------

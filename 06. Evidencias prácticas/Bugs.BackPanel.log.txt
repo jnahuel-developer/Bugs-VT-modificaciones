@@ -1,0 +1,362 @@
+
+2026-02-26 15:48:31,581 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147256058621 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147256058621&operador=5&topic=payment
+2026-02-26 15:48:31,581 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:48:31,581 - INFO - DEV | IPN recibida | topic=payment | id=147256058621 | operador=5 | version=1.1.5
+2026-02-26 15:48:31,581 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:48:31,581 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:48:31,584 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147256058621
+2026-02-26 15:48:31,607 - INFO - [0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId=6, ExternalReference=BGSQR_05500, MontoAcumulado=99.89, ApprovedCount=1, PaymentId1=147256058621, PaymentId2=, PaymentIdComprobante=147256058621, MaquinaIdResuelta=8e644abc-fd03-471b-9650-3dc8ab6ba346, UsaFallbackMaquinaNula=False
+2026-02-26 15:48:31,614 - INFO - [0] - Registrando caso no procesable. Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff - Monto: 99.89
+2026-02-26 15:48:31,627 - INFO - [0] - Registro NO PROCESABLE guardado correctamente en la base de datos.
+2026-02-26 15:48:31,627 - INFO - DEV | Mixto | cierre | tipo=timeout | opMixtaId=6 | MontoAcumulado=99.89 | ApprovedCount=1 | PaymentId1=147256058621 | PaymentId2= | inserta_NO_PROCESABLE=True | comprobanteUsado=147256058621
+2026-02-26 15:48:31,631 - ERROR - [147256058621] - Error inesperado en RegistrarPago para idComprobante=147256058621, operador=5
+System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.SqlClient.SqlException: Cannot insert duplicate key row in object 'dbo.MercadoPagoOperacionMixta' with unique index 'IX_MercadoPagoOperacionMixta_Operador_External_Cerrada'. The duplicate key value is (02bd2b9c-6bad-4c88-a0df-57d93044fbff, BGSQR_05500, 1).
+The statement has been terminated.
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader(Boolean isInternal, Boolean forDescribeParameterEncryption)
+   at System.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, String endMethod, Boolean isInternal)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Mapping.Update.Internal.DynamicUpdateCommand.<ExecuteAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<ExecuteInTransactionAsync>d__3d`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesToStoreAsync>d__39.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.<ExecuteAsyncImplementation>d__9`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesInternalAsync>d__31.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at BugsMVC.Controllers.PagosMPController.<CerrarPagoMixtoInconsistente>d__35.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 916
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at BugsMVC.Controllers.PagosMPController.<ProcesarPendientesMixtosExpirados>d__25.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 713
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at BugsMVC.Controllers.PagosMPController.<RegistrarPago>d__23.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 204
+2026-02-26 15:48:31,647 - INFO - [147256058621] - Finalizó el proceso de RegistrarPago.
+2026-02-26 15:48:32,076 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147256064539 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147256064539&operador=5&topic=payment
+2026-02-26 15:48:32,076 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:48:32,076 - INFO - DEV | IPN recibida | topic=payment | id=147256064539 | operador=5 | version=1.1.5
+2026-02-26 15:48:32,076 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:48:32,076 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:48:32,078 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147256064539
+2026-02-26 15:48:32,083 - INFO - [0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId=6, ExternalReference=BGSQR_05500, MontoAcumulado=99.89, ApprovedCount=1, PaymentId1=147256058621, PaymentId2=, PaymentIdComprobante=147256058621, MaquinaIdResuelta=8e644abc-fd03-471b-9650-3dc8ab6ba346, UsaFallbackMaquinaNula=False
+2026-02-26 15:48:32,083 - INFO - [0] - Registrando caso no procesable. Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff - Monto: 99.89
+2026-02-26 15:48:32,088 - INFO - [0] - Registro NO PROCESABLE guardado correctamente en la base de datos.
+2026-02-26 15:48:32,088 - INFO - DEV | Mixto | cierre | tipo=timeout | opMixtaId=6 | MontoAcumulado=99.89 | ApprovedCount=1 | PaymentId1=147256058621 | PaymentId2= | inserta_NO_PROCESABLE=True | comprobanteUsado=147256058621
+2026-02-26 15:48:32,092 - ERROR - [147256064539] - Error inesperado en RegistrarPago para idComprobante=147256064539, operador=5
+System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.SqlClient.SqlException: Cannot insert duplicate key row in object 'dbo.MercadoPagoOperacionMixta' with unique index 'IX_MercadoPagoOperacionMixta_Operador_External_Cerrada'. The duplicate key value is (02bd2b9c-6bad-4c88-a0df-57d93044fbff, BGSQR_05500, 1).
+The statement has been terminated.
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader(Boolean isInternal, Boolean forDescribeParameterEncryption)
+   at System.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, String endMethod, Boolean isInternal)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Mapping.Update.Internal.DynamicUpdateCommand.<ExecuteAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<ExecuteInTransactionAsync>d__3d`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesToStoreAsync>d__39.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.<ExecuteAsyncImplementation>d__9`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesInternalAsync>d__31.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at BugsMVC.Controllers.PagosMPController.<CerrarPagoMixtoInconsistente>d__35.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 916
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at BugsMVC.Controllers.PagosMPController.<ProcesarPendientesMixtosExpirados>d__25.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 713
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at BugsMVC.Controllers.PagosMPController.<RegistrarPago>d__23.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 204
+2026-02-26 15:48:32,093 - INFO - [147256064539] - Finalizó el proceso de RegistrarPago.
+2026-02-26 15:48:40,984 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147256058621 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147256058621&operador=5&topic=payment
+2026-02-26 15:48:40,984 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:48:40,984 - INFO - DEV | IPN recibida | topic=payment | id=147256058621 | operador=5 | version=1.1.5
+2026-02-26 15:48:40,984 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:48:40,984 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:48:40,986 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147256058621
+2026-02-26 15:48:40,991 - INFO - [0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId=6, ExternalReference=BGSQR_05500, MontoAcumulado=99.89, ApprovedCount=1, PaymentId1=147256058621, PaymentId2=, PaymentIdComprobante=147256058621, MaquinaIdResuelta=8e644abc-fd03-471b-9650-3dc8ab6ba346, UsaFallbackMaquinaNula=False
+2026-02-26 15:48:40,991 - INFO - [0] - Registrando caso no procesable. Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff - Monto: 99.89
+2026-02-26 15:48:40,995 - INFO - [0] - Registro NO PROCESABLE guardado correctamente en la base de datos.
+2026-02-26 15:48:40,995 - INFO - DEV | Mixto | cierre | tipo=timeout | opMixtaId=6 | MontoAcumulado=99.89 | ApprovedCount=1 | PaymentId1=147256058621 | PaymentId2= | inserta_NO_PROCESABLE=True | comprobanteUsado=147256058621
+2026-02-26 15:48:40,999 - ERROR - [147256058621] - Error inesperado en RegistrarPago para idComprobante=147256058621, operador=5
+System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.SqlClient.SqlException: Cannot insert duplicate key row in object 'dbo.MercadoPagoOperacionMixta' with unique index 'IX_MercadoPagoOperacionMixta_Operador_External_Cerrada'. The duplicate key value is (02bd2b9c-6bad-4c88-a0df-57d93044fbff, BGSQR_05500, 1).
+The statement has been terminated.
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader(Boolean isInternal, Boolean forDescribeParameterEncryption)
+   at System.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, String endMethod, Boolean isInternal)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Mapping.Update.Internal.DynamicUpdateCommand.<ExecuteAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<ExecuteInTransactionAsync>d__3d`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesToStoreAsync>d__39.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.<ExecuteAsyncImplementation>d__9`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesInternalAsync>d__31.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at BugsMVC.Controllers.PagosMPController.<CerrarPagoMixtoInconsistente>d__35.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 916
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at BugsMVC.Controllers.PagosMPController.<ProcesarPendientesMixtosExpirados>d__25.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 713
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at BugsMVC.Controllers.PagosMPController.<RegistrarPago>d__23.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 204
+2026-02-26 15:48:40,999 - INFO - [147256058621] - Finalizó el proceso de RegistrarPago.
+2026-02-26 15:48:41,771 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147256064539 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147256064539&operador=5&topic=payment
+2026-02-26 15:48:41,771 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:48:41,771 - INFO - DEV | IPN recibida | topic=payment | id=147256064539 | operador=5 | version=1.1.5
+2026-02-26 15:48:41,771 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:48:41,771 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:48:41,773 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147256064539
+2026-02-26 15:48:41,778 - INFO - [0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId=6, ExternalReference=BGSQR_05500, MontoAcumulado=99.89, ApprovedCount=1, PaymentId1=147256058621, PaymentId2=, PaymentIdComprobante=147256058621, MaquinaIdResuelta=8e644abc-fd03-471b-9650-3dc8ab6ba346, UsaFallbackMaquinaNula=False
+2026-02-26 15:48:41,778 - INFO - [0] - Registrando caso no procesable. Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff - Monto: 99.89
+2026-02-26 15:48:41,784 - INFO - [0] - Registro NO PROCESABLE guardado correctamente en la base de datos.
+2026-02-26 15:48:41,784 - INFO - DEV | Mixto | cierre | tipo=timeout | opMixtaId=6 | MontoAcumulado=99.89 | ApprovedCount=1 | PaymentId1=147256058621 | PaymentId2= | inserta_NO_PROCESABLE=True | comprobanteUsado=147256058621
+2026-02-26 15:48:41,788 - ERROR - [147256064539] - Error inesperado en RegistrarPago para idComprobante=147256064539, operador=5
+System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.SqlClient.SqlException: Cannot insert duplicate key row in object 'dbo.MercadoPagoOperacionMixta' with unique index 'IX_MercadoPagoOperacionMixta_Operador_External_Cerrada'. The duplicate key value is (02bd2b9c-6bad-4c88-a0df-57d93044fbff, BGSQR_05500, 1).
+The statement has been terminated.
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader(Boolean isInternal, Boolean forDescribeParameterEncryption)
+   at System.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, String endMethod, Boolean isInternal)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Mapping.Update.Internal.DynamicUpdateCommand.<ExecuteAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<ExecuteInTransactionAsync>d__3d`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesToStoreAsync>d__39.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.<ExecuteAsyncImplementation>d__9`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesInternalAsync>d__31.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at BugsMVC.Controllers.PagosMPController.<CerrarPagoMixtoInconsistente>d__35.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 916
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at BugsMVC.Controllers.PagosMPController.<ProcesarPendientesMixtosExpirados>d__25.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 713
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at BugsMVC.Controllers.PagosMPController.<RegistrarPago>d__23.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 204
+2026-02-26 15:48:41,788 - INFO - [147256064539] - Finalizó el proceso de RegistrarPago.
+
+
+
+
+
+2026-02-26 15:49:16,144 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:16,146 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:17,513 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:17,516 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:17,547 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131719152&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:20,252 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:20,483 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: SetOperadorID Parameters: Key: operadorID Value: 02bd2b9c-6bad-4c88-a0df-57d93044fbff Key: operadorID Value: operadorID=02bd2b9c-6bad-4c88-a0df-57d93044fbff Url: https://vtbeta.bugssa.com.ar/Operador/SetOperadorID
+2026-02-26 15:49:20,483 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: SetOperadorID
+2026-02-26 15:49:20,519 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:20,519 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:20,647 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:20,649 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:20,697 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131722269&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:20,744 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:47,336 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:47,336 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:47,475 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:47,477 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:47,978 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131749079&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:48,041 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:48,761 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:48,761 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:48,868 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:48,870 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:48,880 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131750494&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:48,938 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:49,656 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:49,656 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:49,790 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:49,793 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:49,800 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131751414&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:49,859 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:50,473 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:50,474 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:50,583 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:50,586 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:50,592 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131752209&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:50,650 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:53,215 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:53,215 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:53,323 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:53,325 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:53,332 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131754948&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:53,390 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:54,074 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:54,074 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:54,184 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:54,187 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:54,194 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131755811&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:54,249 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:49:54,858 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: Index Parameters: Key: clsSession Value: True Key: clsSession Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago
+2026-02-26 15:49:54,858 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: Index
+2026-02-26 15:49:54,967 - DEBUG - Executing Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores Parameters: Key: forSelector Value: True Key: forSelector Value: forSelector=true Url: https://vtbeta.bugssa.com.ar/Operador/GetAllOperadores
+2026-02-26 15:49:54,970 - DEBUG - Executed Controller: BugsMVC.Controllers.OperadorController Action: GetAllOperadores
+2026-02-26 15:49:54,975 - DEBUG - Executing Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos Parameters: Key: sidx Value:  Key: sidx Value: Key: sord Value: asc Key: sord Value: Key: rows Value: 20 Key: rows Value: Key: page Value: 1 Key: page Value: Key: pageSize Value: 20 Key: pageSize Value: Key: filters Value:  Key: filters Value:  Url: https://vtbeta.bugssa.com.ar/MercadoPago/GetAllMercadoPagos?_search=false&nd=1772131756591&rows=20&page=1&sidx=&sord=asc
+2026-02-26 15:49:55,033 - DEBUG - Executed Controller: BugsMVC.Controllers.MercadoPagoController Action: GetAllMercadoPagos
+2026-02-26 15:50:34,403 - DEBUG - Executing Controller: BugsMVC.Controllers.PagosMPController Action: Index Parameters: Key: operador Value: 5 Key: operador Value:                                              Key: topic Value: payment Key: topic Value:                                              Key: id Value: 147256058621 Key: id Value:                                               Url: https://vtbeta.bugssa.com.ar/pagosmp/?id=147256058621&operador=5&topic=payment
+2026-02-26 15:50:34,403 - DEBUG - Executed Controller: BugsMVC.Controllers.PagosMPController Action: Index
+2026-02-26 15:50:34,403 - INFO - DEV | IPN recibida | topic=payment | id=147256058621 | operador=5 | version=1.1.5
+2026-02-26 15:50:34,403 - INFO - DEV | AmbienteSimuladoresHabilitado=False
+2026-02-26 15:50:34,403 - INFO - DEV | PagosMixtosHabilitados=True
+2026-02-26 15:50:34,405 - INFO - DEV | Operador resuelto | OperadorId=02bd2b9c-6bad-4c88-a0df-57d93044fbff | Numero=5 | Nombre=Bugs Taller | id=147256058621
+2026-02-26 15:50:34,410 - INFO - [0] - Registrando NO_PROCESABLE por timeout de pago mixto inconsistente. MercadoPagoOperacionMixtaId=6, ExternalReference=BGSQR_05500, MontoAcumulado=99.89, ApprovedCount=1, PaymentId1=147256058621, PaymentId2=, PaymentIdComprobante=147256058621, MaquinaIdResuelta=8e644abc-fd03-471b-9650-3dc8ab6ba346, UsaFallbackMaquinaNula=False
+2026-02-26 15:50:34,410 - INFO - [0] - Registrando caso no procesable. Operador: 02bd2b9c-6bad-4c88-a0df-57d93044fbff - Monto: 99.89
+2026-02-26 15:50:34,415 - INFO - [0] - Registro NO PROCESABLE guardado correctamente en la base de datos.
+2026-02-26 15:50:34,415 - INFO - DEV | Mixto | cierre | tipo=timeout | opMixtaId=6 | MontoAcumulado=99.89 | ApprovedCount=1 | PaymentId1=147256058621 | PaymentId2= | inserta_NO_PROCESABLE=True | comprobanteUsado=147256058621
+2026-02-26 15:50:34,419 - ERROR - [147256058621] - Error inesperado en RegistrarPago para idComprobante=147256058621, operador=5
+System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. ---> System.Data.SqlClient.SqlException: Cannot insert duplicate key row in object 'dbo.MercadoPagoOperacionMixta' with unique index 'IX_MercadoPagoOperacionMixta_Operador_External_Cerrada'. The duplicate key value is (02bd2b9c-6bad-4c88-a0df-57d93044fbff, BGSQR_05500, 1).
+The statement has been terminated.
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader(Boolean isInternal, Boolean forDescribeParameterEncryption)
+   at System.Data.SqlClient.SqlCommand.InternalEndExecuteNonQuery(IAsyncResult asyncResult, String endMethod, Boolean isInternal)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryAsync(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Mapping.Update.Internal.DynamicUpdateCommand.<ExecuteAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Data.Entity.Core.Mapping.Update.Internal.UpdateTranslator.<UpdateAsync>d__0.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<ExecuteInTransactionAsync>d__3d`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesToStoreAsync>d__39.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.SqlServer.DefaultSqlExecutionStrategy.<ExecuteAsyncImplementation>d__9`1.MoveNext()
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Data.Entity.Core.Objects.ObjectContext.<SaveChangesInternalAsync>d__31.MoveNext()
+   --- End of inner exception stack trace ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at BugsMVC.Controllers.PagosMPController.<CerrarPagoMixtoInconsistente>d__35.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 916
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at BugsMVC.Controllers.PagosMPController.<ProcesarPendientesMixtosExpirados>d__25.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 713
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.GetResult()
+   at BugsMVC.Controllers.PagosMPController.<RegistrarPago>d__23.MoveNext() in C:\.NET\02. Codigo fuente\BugsMVC\BugsMVC\Controllers\PagosMPController.cs:line 204
+2026-02-26 15:50:34,420 - INFO - [147256058621] - Finalizó el proceso de RegistrarPago.

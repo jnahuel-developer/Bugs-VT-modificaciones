@@ -1,0 +1,70 @@
+El cliente deberá confirmar si:
+• Permitir o no dejar consumidores sin credenciales web (por ejemplo, cargas iniciales).
+Pueden crerse consumidores SIN CREDENCIALES WEB, de echo es lo mas habitual, solo en pocos casos se le da acceso
+
+
+• Cómo deben presentarse los mensajes de error cuando un mail está duplicado (mensaje
+global, mensaje junto al campo, etc.).
+De la manera mas clara para el operador, que es quien hace esta carga
+Esto pasa tambien cuando el CONSUMIDOR intenta cambiar sus propias credenciales .
+Entiendo que es mas eficaz un mensaje global
+
+
+>>>>>>>>>>>>>>>>>>>.
+
+Pedido 1.1: Script SQL masivo de credenciales por locación
+Me alcanza con que sea un scrip suelto, para ejecutar en el entorno del sql management
+
+Se debe validar si es requisito:
+• Registrar en algún lugar que estas credenciales fueron generadas automáticamente.
+No es necesario
+
+• Forzar cambio de contraseña en el primer acceso (a nivel de lógica de negocio)
+No es necesario
+
+>>>>>>>>>>>>>>>>>>>>>>>>
+
+Supuestos y puntos a validar
+Confirmar con el cliente:
+• Si todos los casos mixtos siguen exactamente el patrón authorized → approved +
+approved, o si pueden existir más variaciones (por ejemplo, más de dos partes).
+Lo daremos por CIERTO, solo esperaremos 2 partes
+
+
+• El máximo tiempo aceptable entre las distintas notificaciones parciales antes de tomar
+una decisión (timeout).
+usaremos 15 segundos, en todos los casos que no se logre completar, por timeout, o los casos que desc ribis mas abajo,
+ seria bueno armar un registro en la DB  mercado pago table, con NO PROCESABLE/ NO PROCESABLE con el cam po detalle "Pago mixto inconsistente"
+con esto sabremos mas adelante si es que existen casos raros que mas tarde podramos resolver
+
+Acordar qué hacer si:
+• Llega una parte aprobada pero nunca llega la otra (ejemplo: cancelación parcial del
+pago).
+
+• Se recibe primero una notificación approved y la authorized llega desfasada (por
+condiciones de red).
+
+>>>>>>>>>>>>>>>
+
+Confirmar con el cliente la política deseada:
+• ¿Siempre se deben borrar las TransaccionesMal y registros de Mercado Pago al eli
+minar el “dueño” (operador/locación/máquina)?
+Aca faltan CONSUMIDOR, JERARQUIA
+
+• ¿O hay escenarios donde prefieren mantener historial financiero aunque se borre la
+configuración de la máquina o locación?
+
+Debe seguir la logica ya existente, avisando VOY A BORRAR XXXXX , luego dice MIRA QUE LO BORRO .... si el operadoor confirma entonces lo ejecutamos.
+No mantenemos el historial financiero. soft delete no es necesario.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+Definir el mecanismo de autenticación/autorización para el consumo de esta API.
+Nota del desarrollador: Por defecto se utilizarán credenciales de usuario administrador
+del BackPanel para acceder a estos datos (autenticación basada en login existente),
+dado que actualmente no se dispone de un sistema de tokens. Si el cliente requiere un
+esquema diferente (por ejemplo, API keys o tokens específicos), se podrá incorporar
+en una fase posterior.
+
+imaginaba un BEARED TOKEN como suficiente, podria guardarse en un campo de la tabla de OPERADORES
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
